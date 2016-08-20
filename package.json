@@ -1,0 +1,17 @@
+{
+  "name": "pubsub_testnet",
+  "version": "1.0.0",
+  "description": "Testnet to spin up libp2p nodes for the purpose of testing pubsub implementations",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "js-ipfs",
+    "ipfs",
+    "libp2p",
+    "pubsub"
+  ],
+  "author": "Gavin McDermott <gavinmcdermott@gmail.com>",
+  "license": "MIT"
+}
