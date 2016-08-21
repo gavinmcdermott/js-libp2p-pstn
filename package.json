@@ -2,10 +2,10 @@
   "name": "pubsub_testnet",
   "version": "1.0.0",
   "description": "Testnet to spin up libp2p nodes for the purpose of testing pubsub implementations",
-  "main": "index.js",
+  "main": "src/network.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "node src/network.js"
   },
   "keywords": [
     "js-ipfs",
@@ -17,11 +17,14 @@
   "license": "MIT",
   "dependencies": {
     "abstract-blob-store": "3.2.0",
+    "es6-promisify": "4.1.0",
     "ipfs-bitswap": "0.6.0",
+    "ipfs-repo": "0.8.0",
     "libp2p-ipfs": "0.12.1",
     "lodash": "4.15.0",
     "peer-id": "0.7.0",
     "peer-info": "0.7.0",
+    "q": "1.4.1",
     "ramda": "0.22.1",
     "winston": "2.2.0"
   }

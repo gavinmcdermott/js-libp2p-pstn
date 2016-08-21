@@ -16,12 +16,12 @@ const log = (msg, ...data) => {
   logWithOpts('info', msg, data)
 }
 
-const warn = (msg, ...data) => {
+const logWarn = (msg, ...data) => {
   logWithOpts('warn', msg, data)
 }
 
-const error = (msg, ...data) => {
+const logError = (msg, ...data) => {
   logWithOpts('error', msg, data)
 }
 
-module.exports = { log, warn, error }
+module.exports = { log, logWarn, logError }
