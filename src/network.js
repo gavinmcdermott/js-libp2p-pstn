@@ -8,26 +8,25 @@ const multiaddr = require('multiaddr')
 const os = require('os')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
-const promisify = require('es6-promisify')
-// const Q = require('q')
+// const promisify = require('es6-promisify')
+const Q = require('q')
 const R = require('ramda')
 const Repo = require('ipfs-repo')
+const Swarm = require('libp2p-swarm')
 
 // Local deps
 const constants = require('./constants')
 const { log, logWarn, logError } = require('./utils')
 
 // Network constants
-const NODE_PORT = constants.peerConnectionPort
-
-// Locals
-
+const NODE_PORT = constants.basePort
 
 // Test network generation
 const initNodes = (maxNodes) => {
   const result = R.map((idx) => {
     // Peer object creation
-    const peer = new PeerInfo()
+    const peerId = PeerId.create({ bits: 128 })  // Note: currently shortened to shrink the test keyspace
+    const peer = new PeerInfo(peerId)
     const peerAddr = multiaddr(`/ip4/127.0.0.1/tcp/${NODE_PORT+idx}/ipfs/${peer.id.toB58String()}`)
     peer.multiaddr.add(peerAddr)
 
@@ -40,15 +39,16 @@ const initNodes = (maxNodes) => {
   return Promise.resolve(result)
 }
 
+// TODO: Decide where to implement peer discovery strategies...
 const initNodePeerBooks = (network) => {
   const result = R.map((self) => {
-    const myId = self.peerInfo.id.id
+    const myId = self.peerInfo.id
     const myBook = self.libp2p.peerBook
 
-    // TODO: Exponential, wuff...
     R.forEach((neighbor) => {
-      const neighborId = neighbor.peerInfo.id.id
-      if (neighborId === myId) return
+      const neighborId = neighbor.peerInfo.id
+      // do not include self in peerbook
+      if (neighborId.toB58String() === myId.toB58String()) return
       myBook.put(neighbor.peerInfo)
     }, network)
 
@@ -71,16 +71,19 @@ const initNodePeerRepos = (network) => {
 }
 
 const startNodes = (network) => {
-  // libp2p start func expects a callback
-  const cb = (peer) => () => log(`Started peer: ${peer.peerInfo.id.toB58String()}`)
-
-  const startPromises = R.map((peer) => {
-    return promisify(peer.libp2p.start(cb(peer)))
+  const nodeStartPromises = R.map((peer) => {
+    return new Promise((resolve, reject) => {
+      peer.libp2p.start((err) => {
+        if (err) return reject(err)
+        log(`Started node: ${peer.peerInfo.id.toB58String()}`)
+        return resolve()
+      })
+    })
   }, network)
 
-  return Promise.all(startPromises)
+  return Promise.all(nodeStartPromises)
     .then((results) => {
-      log(`${R.length(results)} peers started`)
+      log(`${R.length(results)} nodes started`)
       return network
     })
 }
@@ -94,24 +97,45 @@ const initNodeBitswaps = (network) => {
   return Promise.resolve(result)
 }
 
-
-// TODO:
-// TODO:
-// TODO:
 const linkNodes = (network) => {
+  const potentialLinkNodes = R.map((fromNode) => {
+    const fromId = fromNode.peerInfo.id.toB58String()
 
+    return R.map((toNode) => {
+      const toId = toNode.peerInfo.id.toB58String()
+      // don't link to self
+      if (fromId === toId) return null
+
+      return new Promise((resolve, reject) => {
+        fromNode.libp2p.dialByPeerInfo(toNode.peerInfo, (err) => {
+          if (err) return reject(err)
+          return resolve()
+        })
+      })
+    }, network)
+
+  }, network)
+
+  const linkNodes = R.filter((pExists) => pExists, R.flatten(potentialLinkNodes))
+
+  return Promise.all(linkNodes)
+    .then((results) => {
+      log(`${R.length(results)} links created`)
+      return network
+    })
 }
 
-
-
-// API
-// API
-// API
+//
 
 const initTestnet = (maxNodes) => {
+  // Hack until strategies implemented
+  if (maxNodes > 30) {
+    logError(`Strategies for building node peerbooks are being implemented. Until then keep it under 30`)
+    throw new Error(`Keep maxNodes it under 30 until strategies implemented`)
+  }
   let start = new Date()
 
-  initNodes(maxNodes)
+  return initNodes(maxNodes)
     .then(initNodePeerBooks)
     .then(initNodePeerRepos)
     .then(startNodes)
@@ -120,14 +144,16 @@ const initTestnet = (maxNodes) => {
     .then((result) => {
       log('DONE')
       let end = new Date()
-      log(`started ${maxNodes} nodes in ${(end-start) / 1000} seconds`)
+      log(`Started a ${maxNodes} node network in ${(end-start) / 1000} seconds`)
+      process.exit()
     })
     .catch((err) => {
       console.log(err)
       logError('ERR:', err)
       let end = new Date()
-      log(`started ${maxNodes} nodes in ${(end-start) / 1000} seconds`)
+      log(`Failed to start a ${maxNodes} node network (${(end-start) / 1000} seconds)`)
+      process.exit()
     })
 }
 
-initTestnet(1)
+initTestnet(3)

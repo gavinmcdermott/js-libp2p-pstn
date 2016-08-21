@@ -21,6 +21,7 @@
     "ipfs-bitswap": "0.6.0",
     "ipfs-repo": "0.8.0",
     "libp2p-ipfs": "0.12.1",
+    "libp2p-swarm": "0.22.3",
     "lodash": "4.15.0",
     "peer-id": "0.7.0",
     "peer-info": "0.7.0",
