@@ -2,5 +2,6 @@
 
 module.exports = {
   basePort: 12000,
-  debug: true
+  debug: true,
+  profileMem: false
 }
