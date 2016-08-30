@@ -20,7 +20,7 @@ const constants = require('./constants')
 const { log, logWarn, logError, random } = require('./utils')
 
 // Network constants
-const NODE_PORT = constants.basePort
+const NODE_PORT = constants.BASE_PORT
 
 // Node constants
 const BOOTSTRAP_CONNS_PER_NODE = 2
@@ -128,24 +128,30 @@ const batchLinkFunctions = (network) => {
     batches.push(batch)
   }
 
-  log(`Bootstrapping with ${BOOTSTRAP_CONNS_PER_NODE} connections per node`)
-  log(`Batching node connections into ${R.length(batches)} batches (~${partitionSize} connections per batch)`)
+  log(`Bootstrapping with ${BOOTSTRAP_CONNS_PER_NODE} connections per node (${BOOTSTRAP_CONNS_PER_NODE * networkSize} connections to make)`)
+  log(`Partitioning into ${R.length(batches)} batches (~${partitionSize} conns per batch)`)
   return batches
 }
 
 const linkNodes = (network) => {
   const batches = batchLinkFunctions(network)
   let result
+  let connectedNodes = []
 
-  batches.forEach(function (batch) {
-    result = Q.allSettled(batch)
+  let batchSettlingFns = batches.map(function (batch) {
+    return Q.allSettled(batch)
       .then((data) => {
         const nodes = R.pluck('value', data)
-        return Promise.resolve(nodes)
+        connectedNodes.push(nodes)
+        return Promise.resolve()
       })
   })
 
-  return result
+  // return result
+  return Q.allSettled(batchSettlingFns)
+    .then(() => {
+      return Promise.resolve(R.flatten(connectedNodes))
+    })
 }
 
 const initNetwork = (size) => {
@@ -157,30 +163,35 @@ const initNetwork = (size) => {
     .then(startNodes)
     .then(initNodeBitswaps)
     .then(linkNodes)
-    .then((network) => {
+    .then((nodes) => {
       const end = new Date()
-      log(`Initialized ${size} node network (${(end-start) / 1000} seconds)`)
-      return { size, network }
+      log(`Initialized ${size} node network (${(end-start) / 1000}s)`)
+      return nodes
     })
     .catch((err) => {
       const end = new Date()
-      logError(`Network initialization failure. ${size} nodes failed in ${(end-start) / 1000} seconds`, err.message)
-      return Promise.reject(err)
+      logError(`Network initialization failure. ${size} nodes failed in ${(end-start) / 1000}s`, err.message)
+      process.exit()
     })
 }
 
 module.exports = class Network {
-  constructor(config) {
-    const size = config.size
+  constructor(config={}) {
+    this.config = config
 
+    const size = config.size
     if (size && (R.type(size) !== 'Number')) {
       throw new Error('Network size must be a number')
     }
-
-    this.size = size || 1000
+    this.size = size || constants.DEFAULT_NETWORK_SIZE
+    this.nodes = null
   }
 
   init() {
     return initNetwork(this.size)
+      .then((nodes) => {
+        this.nodes = nodes
+        return this
+      })
   }
 }

@@ -9,7 +9,7 @@ const logger = new winston.Logger({
 })
 
 const logWithOpts = (level, msg, data) => {
-  if (!constants.debug) return
+  if (!constants.DEBUG) return
   logger[level](msg, data || null)
 }
 
@@ -30,7 +30,7 @@ const random = (min, max) => {
   return Math.floor(Math.random() * (max - min) + min)
 }
 
-if (constants.profileMem) {
+if (constants.PROFILE_MEM) {
   memwatch.on('leak', (info) => logError('MEMORY LEAK: ', info))
   memwatch.on('stats', (stats) => log('MEMORY PROFILE:', stats))
 }

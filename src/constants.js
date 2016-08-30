@@ -1,7 +1,8 @@
 'use strict'
 
 module.exports = {
-  basePort: 12000,
-  debug: true,
-  profileMem: false
+  BASE_PORT: 12000,
+  DEBUG: true,
+  DEFAULT_NETWORK_SIZE: 1000,
+  PROFILE_MEM: false
 }
