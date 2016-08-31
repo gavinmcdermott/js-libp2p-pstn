@@ -5,7 +5,7 @@ const R = require('ramda')
 const Network = require('./../src/network')
 const constants = require('./../src/constants')
 
-const TEST_NET_SIZE = 2000
+const TEST_NET_SIZE = 100
 const networkConfig = { size: TEST_NET_SIZE }
 
 describe('Testnet init', () => {

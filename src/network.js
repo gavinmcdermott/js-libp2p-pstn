@@ -14,6 +14,7 @@ const PeerInfo = require('peer-info')
 const Q = require('q')
 const R = require('ramda')
 const Repo = require('ipfs-repo')
+const util = require('util')
 
 // Local deps
 const constants = require('./constants')
@@ -120,9 +121,10 @@ const linkNodes = (network) => {
 
   const resolveLinkConnection = (fns) => {
     const fn = R.head(fns.splice(0, 1))
-    logProgress(`${fns.length} links left to resolve...`)
+    logProgress(`Remaining network links to create: ${fns.length}`)
     if (!fns.length) return network
-    return Q.delay(3).then(fn).then(() => resolveLinkConnection(fns))
+    // delay is needed to stop node from keeling over
+    return Q.delay(6).then(fn).then(() => resolveLinkConnection(fns))
   }
 
   log(`Resolving ${R.length(linkFns)} links between nodes`)
