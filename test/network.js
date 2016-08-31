@@ -5,31 +5,36 @@ const R = require('ramda')
 const Network = require('./../src/network')
 const constants = require('./../src/constants')
 
-const TEST_NET_SIZE = 1500
+const TEST_NET_SIZE = 2000
+const networkConfig = { size: TEST_NET_SIZE }
 
 describe('Testnet init', () => {
-  const networkConfig = { size: TEST_NET_SIZE }
   let network
 
   before(() => {
     network = new Network(networkConfig)
   })
 
+  after(() => {
+    network = null
+  })
+
   it('instance exists', () => {
     expect(network instanceof Network).to.be.true
   })
 
-  it(`initialize a ${TEST_NET_SIZE} node testnet`, (done) => {
-    network.init().then((instance) => {
+  it(`initialize a ${TEST_NET_SIZE} node testnet`, () => {
+    return network.init().then((instance) => {
       expect(instance).to.exist
       expect(instance.size).to.equal(networkConfig.size)
-      done()
+      expect(instance.nodes.length).to.equal(networkConfig.size)
     })
   })
 
-  it(`peers bootstrap with 2 connectons`, () => {
+  it(`bootstrap to at least ${constants.NODE_BOOTSTRAP_COUNT} peers`, () => {
     const node = R.head(network.nodes)
-    const pb = node.libp2p.peerBook.getAll()
-    expect(R.keys(pb).length).to.equal(2)
+    const peerBook = node.libp2p.peerBook.getAll()
+    const peerCount = R.keys(peerBook).length
+    expect(peerCount >= constants.NODE_BOOTSTRAP_COUNT).to.be.true
   })
 })

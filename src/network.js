@@ -17,13 +17,11 @@ const Repo = require('ipfs-repo')
 
 // Local deps
 const constants = require('./constants')
-const { log, logWarn, logError, random } = require('./utils')
+const { log, logWarn, logError, logProgress, random } = require('./utils')
 
 // Network constants
-const NODE_PORT = constants.BASE_PORT
-
-// Node constants
-const BOOTSTRAP_CONNS_PER_NODE = 2
+const BASE_PORT = constants.BASE_PORT
+const NODE_BOOTSTRAP_COUNT = constants.NODE_BOOTSTRAP_COUNT
 
 // Test network generation
 const initNodes = (networkSize) => {
@@ -31,7 +29,7 @@ const initNodes = (networkSize) => {
     // Peer object creation
     const peerId = PeerId.create({ bits: 128 })  // Note: currently shortened to shrink the test keyspace
     const peer = new PeerInfo(peerId)
-    const peerAddr1 = multiaddr(`/ip4/127.0.0.1/tcp/${NODE_PORT + idx}/ipfs/${peer.id.toB58String()}`)
+    const peerAddr1 = multiaddr(`/ip4/127.0.0.1/tcp/${BASE_PORT + idx}/ipfs/${peer.id.toB58String()}`)
 
     peer.multiaddr.add(peerAddr1)
 
@@ -82,9 +80,8 @@ const initNodeBitswaps = (network) => {
   return Promise.resolve(result)
 }
 
-const batchLinkFunctions = (network) => {
+const linkNodes = (network) => {
   const networkSize = network.length
-  const connectionBatchSize = Math.floor(networkSize * 0.8)
 
   const genPeersToFetch = (len, skipIdx) => {
     return R.map(() => {
@@ -93,7 +90,7 @@ const batchLinkFunctions = (network) => {
         idxToFetch = random(0, len)
       }
       return idxToFetch
-    }, R.range(0, BOOTSTRAP_CONNS_PER_NODE))
+    }, R.range(0, NODE_BOOTSTRAP_COUNT))
   }
 
   // generate all links
@@ -120,38 +117,16 @@ const batchLinkFunctions = (network) => {
   }, network)
 
   const linkFns = R.flatten(nestedPeerLinkFns)
-  const partitionSize = Math.ceil(linkFns.length / connectionBatchSize)
 
-  let batches = []
-  while (linkFns.length) {
-    let batch = linkFns.splice(0, partitionSize)
-    batches.push(batch)
+  const resolveLinkConnection = (fns) => {
+    const fn = R.head(fns.splice(0, 1))
+    logProgress(`${fns.length} links left to resolve...`)
+    if (!fns.length) return network
+    return Q.delay(3).then(fn).then(() => resolveLinkConnection(fns))
   }
 
-  log(`Bootstrapping with ${BOOTSTRAP_CONNS_PER_NODE} connections per node (${BOOTSTRAP_CONNS_PER_NODE * networkSize} connections to make)`)
-  log(`Partitioning into ${R.length(batches)} batches (~${partitionSize} conns per batch)`)
-  return batches
-}
-
-const linkNodes = (network) => {
-  const batches = batchLinkFunctions(network)
-  let result
-  let connectedNodes = []
-
-  let batchSettlingFns = batches.map(function (batch) {
-    return Q.allSettled(batch)
-      .then((data) => {
-        const nodes = R.pluck('value', data)
-        connectedNodes.push(nodes)
-        return Promise.resolve()
-      })
-  })
-
-  // return result
-  return Q.allSettled(batchSettlingFns)
-    .then(() => {
-      return Promise.resolve(R.flatten(connectedNodes))
-    })
+  log(`Resolving ${R.length(linkFns)} links between nodes`)
+  return resolveLinkConnection(linkFns).then(() => network)
 }
 
 const initNetwork = (size) => {
@@ -163,14 +138,18 @@ const initNetwork = (size) => {
     .then(startNodes)
     .then(initNodeBitswaps)
     .then(linkNodes)
-    .then((nodes) => {
+    .then((network) => {
       const end = new Date()
-      log(`Initialized ${size} node network (${(end-start) / 1000}s)`)
-      return nodes
+      const totalNodes = network.length
+      log(`Initialized ${totalNodes} node network (${(end-start) / 1000}s)`)
+      if (totalNodes !== size) {
+        logWarn(`Initialized network size (${totalNodes}) was different from the anticipated size (${size})`)
+      }
+      return network
     })
     .catch((err) => {
       const end = new Date()
-      logError(`Network initialization failure. ${size} nodes failed in ${(end-start) / 1000}s`, err.message)
+      logError(err)
       process.exit()
     })
 }

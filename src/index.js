@@ -2,7 +2,7 @@
 
 const Network = require('./network')
 
-const network = new Network()
+const network = new Network({ size: 3000 })
 
 network.init()
   .then((network) => {

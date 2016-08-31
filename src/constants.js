@@ -4,5 +4,6 @@ module.exports = {
   BASE_PORT: 12000,
   DEBUG: true,
   DEFAULT_NETWORK_SIZE: 1000,
-  PROFILE_MEM: false
+  NODE_BOOTSTRAP_COUNT: 2,
+  PROFILE_MEM: true
 }
