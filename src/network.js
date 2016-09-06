@@ -11,24 +11,32 @@ const multiaddr = require('multiaddr')
 const os = require('os')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
-const Q = require('q')
+// const Q = require('q')
 const R = require('ramda')
 const Repo = require('ipfs-repo')
 const util = require('util')
 
 // Local deps
-const constants = require('./constants')
-const { log, logWarn, logError, logProgress, random } = require('./utils')
 
-// Network constants
-const BASE_PORT = constants.BASE_PORT
-const NODE_BOOTSTRAP_COUNT = constants.NODE_BOOTSTRAP_COUNT
+// various network topologies to use
+const topologies = require('./topologies/index')
+const topologyTypes = R.keys(topologies)
 
-// Test network generation
-const initNodes = (networkSize) => {
-  const result = R.map((idx) => {
+//
+const { DEFAULTS }  = require('./constants')
+const { log, logWarn, logError, logProgress } = require('./utils')
+
+// Defaults
+const KEY_SIZE = DEFAULTS.KEY_SIZE
+const BASE_PORT = DEFAULTS.BASE_PORT
+const NODE_BOOTSTRAP_COUNT = DEFAULTS.NODE_BOOTSTRAP_COUNT
+
+// Test network initialization
+
+const initNodes = (network) => {
+  const nodes = R.map((idx) => {
     // Peer object creation
-    const peerId = PeerId.create({ bits: 128 })  // Note: currently shortened to shrink the test keyspace
+    const peerId = PeerId.create({ bits: KEY_SIZE })
     const peer = new PeerInfo(peerId)
     const peerAddr1 = multiaddr(`/ip4/127.0.0.1/tcp/${BASE_PORT + idx}/ipfs/${peer.id.toB58String()}`)
 
@@ -38,24 +46,32 @@ const initNodes = (networkSize) => {
     const libNode = new libp2p.Node(peer)
 
     return { peerInfo: peer, libp2p: libNode }
-  }, R.range(0, networkSize))
+  }, R.range(0, network.size))
 
-  return Promise.resolve(result)
+  // Set nodes on the network instance
+  network.nodes = nodes
+
+  log(`All nodes initialized`)
+  return Promise.resolve(network)
 }
 
 const initNodePeerRepos = (network) => {
+  const nodes = network.nodes
   const tmpDir = os.tmpdir()
 
   const result = R.map((peer) => {
     const repoPath = `${tmpDir}/${peer.peerInfo.id.toB58String()}`
     peer.repo = new Repo(repoPath, { stores: bs })
     return peer
-  }, network)
+  }, nodes)
 
-  return Promise.resolve(result)
+  log(`All node peer repos initialized`)
+  return Promise.resolve(network)
 }
 
 const startNodes = (network) => {
+  const nodes = network.nodes
+
   const nodeStartPromises = R.map((peer) => {
     return new Promise((resolve, reject) => {
       peer.libp2p.start((err) => {
@@ -63,7 +79,7 @@ const startNodes = (network) => {
         return resolve()
       })
     })
-  }, network)
+  }, nodes)
 
   return Promise.all(nodeStartPromises)
     .then((results) => {
@@ -73,84 +89,39 @@ const startNodes = (network) => {
 }
 
 const initNodeBitswaps = (network) => {
+  const nodes = network.nodes
+
   const result = R.map((peer) => {
     peer.bitswap = new Bitswap(peer.peerInfo, peer.libp2p, peer.repo.datastore, peer.peerBook)
     return peer
-  }, network)
+  }, nodes)
 
-  return Promise.resolve(result)
+  return Promise.resolve(network)
 }
 
-const linkNodes = (network) => {
-  const networkSize = network.length
-
-  const genPeersToFetch = (len, skipIdx) => {
-    return R.map(() => {
-      let idxToFetch = random(0, len)
-      while (idxToFetch === skipIdx) {
-        idxToFetch = random(0, len)
-      }
-      return idxToFetch
-    }, R.range(0, NODE_BOOTSTRAP_COUNT))
-  }
-
-  // generate all links
-  let curIdx = 0
-
-  const nestedPeerLinkFns = R.map((fromNode) => {
-    const fromId = fromNode.peerInfo.id.toB58String()
-    const linkPeerIds = genPeersToFetch(networkSize, curIdx)
-    const linkPeers = R.map((idx) => network[idx], linkPeerIds)
-
-    // increment the current idx
-    curIdx++
-
-    return R.map((toNode) => {
-      const toId = toNode.peerInfo.id.toB58String()
-
-      return new Promise((resolve, reject) => {
-        fromNode.libp2p.dialByPeerInfo(toNode.peerInfo, (err) => {
-          if (err) return reject(err)
-          return resolve(fromNode)
-        })
-      })
-    }, linkPeers)
-  }, network)
-
-  const linkFns = R.flatten(nestedPeerLinkFns)
-
-  const resolveLinkConnection = (fns) => {
-    const fn = R.head(fns.splice(0, 1))
-    logProgress(`Remaining network links to create: ${fns.length}`)
-    if (!fns.length) return network
-    // delay is needed to stop node from keeling over
-    return Q.delay(6).then(fn).then(() => resolveLinkConnection(fns))
-  }
-
-  log(`Resolving ${R.length(linkFns)} links between nodes`)
-  return resolveLinkConnection(linkFns).then(() => network)
+const initTopology = (network) => {
+  return network.topology.init(network)
 }
 
-const initNetwork = (size) => {
+const initNetwork = (network) => {
   const start = new Date()
-  log(`Initing ${size} node network`)
+  const size = network.size
 
-  return initNodes(size)
+  return initNodes(network)
     .then(initNodePeerRepos)
     .then(startNodes)
     .then(initNodeBitswaps)
-    .then(linkNodes)
-    .then((network) => {
-      const end = new Date()
-      const totalNodes = network.length
-      log(`Initialized ${totalNodes} node network (${(end-start) / 1000}s)`)
+    .then(initTopology)
+    .then((initializedNetwork) => {
+      const finish = new Date()
+      const totalNodes = initializedNetwork.nodes.length
+      log(`Initialized ${totalNodes} node network (${(finish-start) / 1000}s)`)
       if (totalNodes !== size) {
         logWarn(`Initialized network size (${totalNodes}) was different from the anticipated size (${size})`)
       }
-      return network
+      return initializedNetwork
     })
     .catch((err) => {
-      const end = new Date()
       logError(err)
       process.exit()
     })
@@ -160,19 +131,55 @@ module.exports = class Network {
   constructor(config={}) {
     this.config = config
 
+    // nodes are initialized explicitly via init call
+    this._nodes = null
+
+    // network size
     const size = config.size
     if (size && (R.type(size) !== 'Number')) {
       throw new Error('Network size must be a number')
     }
-    this.size = size || constants.DEFAULT_NETWORK_SIZE
-    this.nodes = null
+    this._size = size || DEFAULTS.SIZE
+
+    // network topology
+    const topology = config.topology
+    // TODO: start extracting error classes (e.g.: topology errors)
+    if (topology && !R.contains(topology, topologyTypes)) {
+      throw new Error(`Must use a recognized topology: ${util.format('%j', topologyTypes)}`)
+    }
+    this._topology = topology || topologies.partialMesh
   }
 
   init() {
-    return initNetwork(this.size)
-      .then((nodes) => {
-        this.nodes = nodes
-        return this
-      })
+    log(`Initializing a ${this.size} node network`)
+    return initNetwork(this)
+  }
+
+  set nodes(nodes) {
+    this._nodes = nodes
+  }
+
+  get nodes() {
+    return this._nodes
+  }
+
+  set size(size) {
+    return this._size = size
+  }
+
+  get size() {
+    return this._size
+  }
+
+  set topology(topology) {
+    if (topology && !R.contains(topology, topologyTypes)) {
+      throw new Error(`Must use a recognized topology: ${util.format('%j', topologyTypes)}`)
+    }
+    this._topology = topology
+    return this
+  }
+
+  get topology() {
+    return this._topology
   }
 }

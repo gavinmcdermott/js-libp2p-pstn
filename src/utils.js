@@ -2,7 +2,7 @@
 
 const chalk = require('chalk')
 const memwatch = require('memwatch-next')
-const constants = require('./constants')
+const { ENV } = require('./constants')
 const readline = require('readline')
 const util = require('util')
 
@@ -23,7 +23,7 @@ const levels = {
 }
 
 const logWithOpts = (level, data) => {
-  if (!constants.DEBUG) return
+  if (!ENV.DEBUG) return
 
   const prefix = levels[level]
   const isProgressLog = (level === 'progress')
@@ -57,7 +57,8 @@ const logWarn = (data) => {
 }
 
 const logError = (data) => {
-  logWithOpts('error', data)
+  // https://nodejs.org/api/errors.html
+  logWithOpts('error', data.stack)
 }
 
 const logProgress = (data) => {
@@ -69,7 +70,7 @@ const random = (min, max) => {
   return Math.floor(Math.random() * (max - min) + min)
 }
 
-if (constants.PROFILE_MEM) {
+if (ENV.PROFILE_MEM) {
   memwatch.on('leak', (data) => {
     logError(`Memory leak: ${util.format('%j', data)}`)
   })

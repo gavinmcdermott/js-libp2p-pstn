@@ -1,9 +1,14 @@
 'use strict'
 
-module.exports = {
+const DEFAULTS = {
+  KEY_SIZE: 128,  // in bits; currently shortened to shrink the test keyspace
   BASE_PORT: 12000,
-  DEBUG: true,
-  DEFAULT_NETWORK_SIZE: 1000,
-  NODE_BOOTSTRAP_COUNT: 2,
-  PROFILE_MEM: true
+  SIZE: 1000,
 }
+
+const ENV = {
+  DEBUG: true,
+  PROFILE_MEM: true,  // log memory memory usage
+}
+
+module.exports = { ENV, DEFAULTS }

@@ -1,8 +1,8 @@
 'use strict'
 
-const Network = require('./network')
+const Network = require('./src/network')
 
-const network = new Network({ size: 2000 })
+const network = new Network({ size: 200 })
 
 network.init()
   .then((network) => {
