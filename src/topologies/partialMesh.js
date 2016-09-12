@@ -3,18 +3,18 @@
 const Q = require('q')
 const R = require('ramda')
 
-const { log, logWarn, logError, logProgress, random } = require('./../utils')
+const { log, logError, logProgress, random } = require('./../utils')
 
-const NODE_BOOTSTRAP_COUNT = 2
+const BOOTSTRAP_PEER_COUNT = 2
 
-const genPeersToFetch = (len, skipIdx) => {
+const genPeersToFetch = (len, skipIdx, maxPeers) => {
   return R.map(() => {
     let idxToFetch = random(0, len)
     while (idxToFetch === skipIdx) {
       idxToFetch = random(0, len)
     }
     return idxToFetch
-  }, R.range(0, NODE_BOOTSTRAP_COUNT))
+  }, R.range(0, maxPeers))
 }
 
 const resolveLinkConnection = (fns) => {
@@ -28,17 +28,16 @@ const resolveLinkConnection = (fns) => {
 }
 
 module.exports = {
-  name: 'PARTIAL_MESH',
-  init: (network) => {
-    const size = network.size
-    const nodes = network.nodes
+  type: 'PARTIAL_MESH',
+  init: (nodes) => {
+    const size = nodes.length
 
     // pseudo-randomly generate all peer links
     let curIdx = 0
 
     const nestedPeerLinkFns = R.map((fromNode) => {
       const fromId = fromNode.peerInfo.id.toB58String()
-      const linkPeerIds = genPeersToFetch(size, curIdx)
+      const linkPeerIds = genPeersToFetch(size, curIdx, BOOTSTRAP_PEER_COUNT)
       const linkPeers = R.map((idx) => nodes[idx], linkPeerIds)
 
       // increment the current idx
@@ -61,7 +60,7 @@ module.exports = {
     log(`Resolving ${R.length(linkFns)} links between nodes`)
 
     return resolveLinkConnection(linkFns).then((allResolved) => {
-      return network
+      return nodes
     })
   }
 }

@@ -2,7 +2,7 @@
 
 const chalk = require('chalk')
 const memwatch = require('memwatch-next')
-const { ENV } = require('./constants')
+const ENV = require('./env')
 const readline = require('readline')
 const util = require('util')
 

@@ -2,7 +2,7 @@
 
 module.exports = {
   name: 'RING',
-  init: () =>  {
+  create: () =>  {
     console.log('IMPLEMENT ME!')
     throw new Error('implement err')
   }

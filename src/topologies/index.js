@@ -1,8 +1,15 @@
 'use strict'
 
-const minSpanTree = require('./minSpanTree')
-const nClusters = require('./nClusters')
-const partialMesh = require('./partialMesh')
-const ring = require('./ring')
+const R = require('ramda')
 
-module.exports = { minSpanTree, nClusters, partialMesh, ring }
+const Topology = require('./topology')
+const partialMesh = require('./partialMesh')
+// const minSpanTree = require('./minSpanTree')
+// const nClusters = require('./nClusters')
+// const ring = require('./ring')
+
+const topologyImplementations = [partialMesh]
+
+module.exports = R.map((topology) => {
+  return new Topology(topology)
+}, topologyImplementations)

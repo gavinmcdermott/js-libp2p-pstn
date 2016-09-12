@@ -4,7 +4,7 @@
   "description": "Testnet to spin up libp2p nodes for the purpose of testing pubsub implementations",
   "main": "src/network.js",
   "scripts": {
-    "test": "mocha -t 60000 test/*.spec.js",
+    "test": "mocha -t 60000 test/**/*.spec.js",
     "start": "node example.js"
   },
   "keywords": [
