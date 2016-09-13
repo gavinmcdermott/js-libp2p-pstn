@@ -7,9 +7,19 @@ The Pubsub Testnet is a utility (*still in early, active development*) for initi
 
 The initial purpose of this utility is to to make the development, testing, debugging, and implementation of messaging ('PubSub') strategies in [IPFS](http://ipfs.io/) a delightful experience that's *fun for the whole family!* ™
 
-## Tests
+## Examples
 
-After `npm install`-ing your dependencies, simply run `> npm test`
+Initially the best examples can be found by looking through `/test`. But there's also a basic example of network initialization in the `example.js`.
+
+Before running any tests or examples `npm install` dependencies
+
+#### Run the tests
+
+Run: `npm test`
+
+#### Run a basic example
+
+Run: `npm start`
 
 
 ## Abstractions
@@ -86,10 +96,6 @@ Then all you have to do is add your implementation to the `index.js` file in `/s
 ## Config
 
 Config for each abstraction can be found in the relevant `config` file. To toggle debugging and memory profiling, use config in `/src/env.js`.
-
-## Examples
-
-Initially the best examples can be found by looking through `/test`. But there's also a basic example of network initialization in the `example.js`.
 
 ## Feedback and Issues
 
