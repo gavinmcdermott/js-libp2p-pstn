@@ -10,71 +10,15 @@ const multiaddr = require('multiaddr')
 const os = require('os')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
+const Q = require('q')
 const R = require('ramda')
 const Repo = require('ipfs-repo')
 const util = require('util')
 
-const CONFIG  = require('./config')
+// const CONFIG  = require('./config')
 const Topology = require('./../topologies/topology')
+const Node = require('./../nodes/index')
 const { log, logWarn, logError, logProgress } = require('./../utils')
-
-const createNodes = (size) => {
-  const nodes = R.map((idx) => {
-    // Peer object creation
-    const peerId = PeerId.create({ bits: CONFIG.KEY_SIZE })
-    const peer = new PeerInfo(peerId)
-    const peerAddr1 = multiaddr(`/ip4/127.0.0.1/tcp/${CONFIG.BASE_PORT + idx}/ipfs/${peer.id.toB58String()}`)
-
-    peer.multiaddr.add(peerAddr1)
-
-    // Libp2p node Creation
-    const libNode = new libp2p.Node(peer)
-
-    return { peerInfo: peer, libp2p: libNode }
-  }, R.range(0, size))
-
-  log(`${size} nodes created`)
-  return Promise.resolve(nodes)
-}
-
-const initNodePeerRepos = (nodes) => {
-  const tmpDir = os.tmpdir()
-
-  const result = R.map((peer) => {
-    const repoPath = `${tmpDir}/${peer.peerInfo.id.toB58String()}`
-    peer.repo = new Repo(repoPath, { stores: bs })
-    return peer
-  }, nodes)
-
-  log(`All node peer repos initialized`)
-  return Promise.resolve(nodes)
-}
-
-const startNodes = (nodes) => {
-  const nodeStartPromises = R.map((peer) => {
-    return new Promise((resolve, reject) => {
-      peer.libp2p.start((err) => {
-        if (err) return reject(err)
-        return resolve()
-      })
-    })
-  }, nodes)
-
-  return Promise.all(nodeStartPromises)
-    .then((results) => {
-      log(`${R.length(results)} nodes started`)
-      return nodes
-    })
-}
-
-const initNodeBitswaps = (nodes) => {
-  const result = R.map((peer) => {
-    peer.bitswap = new Bitswap(peer.peerInfo, peer.libp2p, peer.repo.datastore, peer.peerBook)
-    return peer
-  }, nodes)
-
-  return Promise.resolve(nodes)
-}
 
 module.exports = class Network {
   constructor(config={}) {
@@ -89,28 +33,21 @@ module.exports = class Network {
       throw new Error('Network topology must be a valid TOPOLOGY instance')
     }
     this._topology = config.topology
-  }
 
-  _initNodes() {
-    return createNodes(this.size)
-      .then(initNodePeerRepos)
-      .then(startNodes)
-      .then(initNodeBitswaps)
-      .then((nodes) => {
-        this.nodes = nodes
-        return this
-      })
+    // network node instances
+    this.nodes = R.map((offset) => new Node(offset), R.range(0, this.size))
   }
 
   init() {
     log(`Initializing a ${this.size} node network`)
     const start = new Date()
+    const nodeInits = R.map((n) => n.init(), this.nodes)
 
-    return this._initNodes()
+    return Q.allSettled(nodeInits)
       .then(() => this.topology.init(this.nodes))
-      .then((topology) => {
+      .then((nodes) => {
         const finish = new Date()
-        log(`Initialized ${topology.length} node network (${(finish-start) / 1000}s)`)
+        log(`Initialized ${nodes.length} node network (${(finish-start) / 1000}s)`)
         return this
       })
       .catch((err) => {

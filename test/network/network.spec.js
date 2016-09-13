@@ -9,8 +9,7 @@ const Network = require('./../../src/network/index')
 const topologies = require('./../../src/topologies/index')
 
 const size = testUtils.DEFAULT_SIZE
-const topologyType = testUtils.DEFAULT_TOPOLOGY_TYPE
-const topology = R.find(R.propEq('type', topologyType), topologies)
+const topology = topologies[testUtils.DEFAULT_TOPOLOGY_TYPE]
 
 const missingSize = {}
 const missingTopolog = { size }
@@ -40,7 +39,7 @@ describe('Network', () => {
     expect(network instanceof Network).to.be.true
   })
 
-  it(`initializes a default ${size} node testnet with a ${topologyType} topology`, () => {
+  it(`initializes a ${size} node testnet with a ${testUtils.DEFAULT_TOPOLOGY_TYPE} topology`, () => {
     return network.init().then((instance) => {
       expect(instance).to.exist
       expect(instance.size).to.equal(validConfig.size)
