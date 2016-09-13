@@ -24,13 +24,13 @@ module.exports = class Network {
   constructor(config={}) {
     // network size
     if (R.type(config.size) !== 'Number') {
-      throw new Error('Network size must be a valid NUMBER')
+      throw new Error('Network constructor error: size must be a valid NUMBER')
     }
     this._size = config.size
 
     // network topology
     if (!(config.topology instanceof Topology)) {
-      throw new Error('Network topology must be a valid TOPOLOGY instance')
+      throw new Error('Network constructor error: topology must be a valid TOPOLOGY instance')
     }
     this._topology = config.topology
 

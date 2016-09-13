@@ -16,6 +16,10 @@ const { log, logWarn, logError, logProgress } = require('./../utils')
 
 module.exports = class Node {
   constructor(offset) {
+    if (R.type(offset) !== 'Number') {
+      throw new Error('Node constructor error: Node offset must be a valid NUMBER')
+    }
+
     let peerInstance
     let libp2pInstance
     let repoInstance

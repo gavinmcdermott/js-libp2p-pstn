@@ -1,6 +1,7 @@
 'use strict'
 
 const chalk = require('chalk')
+// https://github.com/marcominetti/node-memwatch
 const memwatch = require('memwatch-next')
 const ENV = require('./env')
 const readline = require('readline')
@@ -57,8 +58,12 @@ const logWarn = (data) => {
 }
 
 const logError = (data) => {
+  let result = data
+  if (data instanceof Error) {
+    result = data.stack
+  }
   // https://nodejs.org/api/errors.html
-  logWithOpts('error', data.stack)
+  logWithOpts('error', result)
 }
 
 const logProgress = (data) => {
@@ -72,7 +77,8 @@ const random = (min, max) => {
 
 if (ENV.PROFILE_MEM) {
   memwatch.on('leak', (data) => {
-    logError(`Memory leak: ${util.format('%j', data)}`)
+    // console.log('leak!', data)
+    logError(`Memory leak potential: Heap growth over 5 consecutive GCs: ${util.format('%j', data)}`)
   })
   memwatch.on('stats', (data) => {
     log(`Memory profile: ${util.format('%j', data)}`)

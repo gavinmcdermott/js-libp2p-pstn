@@ -18,8 +18,9 @@ const validConfig = { size, topology }
 describe('Network', () => {
   let network
 
+  // Must kill connections for further other tests!
   after(() => {
-    network = null
+    R.forEach((node) => node.libp2p.swarm.close(), network.nodes)
   })
 
   it('fails without a size', () => {
@@ -39,7 +40,7 @@ describe('Network', () => {
     expect(network instanceof Network).to.be.true
   })
 
-  it(`initializes a ${size} node testnet with a ${testUtils.DEFAULT_TOPOLOGY_TYPE} topology`, () => {
+  it(`init`, () => {
     return network.init().then((instance) => {
       expect(instance).to.exist
       expect(instance.size).to.equal(validConfig.size)

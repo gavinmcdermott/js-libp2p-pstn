@@ -7,4 +7,7 @@ const topology = topologies['PARTIAL_MESH']  // valid topology type
 // init the network with a size and Topology instance
 const network = new Network({ size, topology })
 
-network.init().then((initializedNetwork) => { /* do something awesome! */ })
+network.init().then((initializedNetwork) => {
+  /* do something awesome! */
+  process.exit()
+})

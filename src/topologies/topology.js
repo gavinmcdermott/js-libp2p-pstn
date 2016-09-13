@@ -1,15 +1,16 @@
 'use strict'
 
 const R = require('ramda')
+const Node = require('./../nodes/index')
 
 module.exports = class Topology {
   constructor(topology) {
     if (R.isNil(topology.type)) {
-      throw new Error('Topology type must be a valid STRING')
+      throw new Error('Topology constructor error: type must be a valid STRING')
     }
 
     if (R.type(topology.init) !== 'Function') {
-      throw new Error('Topology init must be a valid FUNCTION')
+      throw new Error('Topology constructor error: init must be a valid FUNCTION')
     }
 
     this._type = topology.type
@@ -17,8 +18,11 @@ module.exports = class Topology {
   }
 
   init(nodes) {
-    if (R.isNil(nodes)) {
-      throw new Error('Topology init expects network nodes to connect')
+    if (R.isNil(nodes) || !R.isArrayLike(nodes)) {
+      throw new Error('Topology init expects array of valid NODEs to connect')
+    }
+    if (!(R.head(nodes) instanceof Node)) {
+      throw new Error('Topology init expects valid NODE instances')
     }
     return this._init(nodes)
   }
