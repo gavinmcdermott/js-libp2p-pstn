@@ -5,16 +5,12 @@ const R = require('ramda')
 
 const testUtils = require('./../testUtils')
 
-// const Network = require('./../../src/network/index')
-const Topology = require('./../../src/topologies/topology')
 const Node = require('./../../src/nodes/index')
+const Topology = require('./../../src/topologies/topology')
 const topologies = require('./../../src/topologies/index')
 const ring = require('./../../src/topologies/ring')
 
-// const topology = topologies[ring.type]
-const size = testUtils.DEFAULT_SIZE
-
-// const config = { size, topology }
+const totalNodes = 10
 
 describe(`Topology: ${ring.type}`, () => {
   let instance
@@ -39,7 +35,7 @@ describe(`Topology: ${ring.type}`, () => {
 
   describe('init', () => {
     before(() => {
-      nodes = R.map((offset) => new Node(offset), R.range(0, size))
+      nodes = R.map((offset) => new Node(offset), R.range(0, totalNodes))
     })
 
     // Must kill connections for further other tests!
