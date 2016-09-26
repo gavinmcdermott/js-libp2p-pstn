@@ -12,14 +12,13 @@ const mapIndexed = R.addIndex(R.map)
 module.exports = {
   type: TYPE,
   init: (nodes) =>  {
+    const totalNodes = nodes.length
+
     const linkFns = mapIndexed((node, idx) => {
       // set the neighbor node
-      const neighborId = idx + 1
-      const neighborNode = nodes[neighborId] ? nodes[neighborId] : nodes[0]
-
-      // console.log(nodes[neighborId] ?
-      //   `FROM: ${idx} ${node.peerInfo.id.toB58String()} => TO: ${neighborId} ${neighborNode.peerInfo.id.toB58String()}`
-      //   : `FROM: ${idx} ${node.peerInfo.id.toB58String()} => TO: 0 ${neighborNode.peerInfo.id.toB58String()}`)
+      const neighborIdx = (idx + 1) % totalNodes
+      const neighborNode = nodes[neighborIdx]
+      // console.log(`FROM: ${idx} ${node.peerInfo.id.toB58String()} => TO: ${neighborIdx} ${neighborNode.peerInfo.id.toB58String()}`)
 
       return new Promise((resolve, reject) => {
         node.libp2p.dialByPeerInfo(neighborNode.peerInfo, (err) => {

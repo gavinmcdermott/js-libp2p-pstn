@@ -9,7 +9,7 @@ const nClusters = require('./nClusters')
 // TODO: add more topologies
 // const minSpanTree = require('./minSpanTree')
 
-const implementations = [partialMesh, ring]
+const implementations = [partialMesh, ring, nClusters]
 
 let topologies = {}
 
