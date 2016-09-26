@@ -120,8 +120,6 @@ module.exports = {
 
     log(`Resolving ${R.length(linkFns)} links in ${TYPE} topology`)
 
-    return resolveAsyncAccum(linkFns).then(() => {
-      return nodes
-    })
+    return resolveAsyncAccum(linkFns).then(() => nodes)
   }
 }

@@ -32,8 +32,6 @@ module.exports = {
     log(`Resolving ${R.length(linkFns)} links in ${TYPE} topology`)
 
     // return a promise with all connected nodes
-    return resolveAsyncAccum(linkFns).then((connected) => {
-      return connected
-    })
+    return resolveAsyncAccum(linkFns).then(() => nodes)
   }
 }
