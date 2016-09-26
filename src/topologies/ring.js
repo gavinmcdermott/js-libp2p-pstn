@@ -3,19 +3,9 @@
 const Q = require('q')
 const R = require('ramda')
 
-const { log, logError, logProgress, random } = require('./../utils')
+const { log, logError, logProgress, random, resolveWithTailRec } = require('./../utils')
 
 const TYPE = 'RING'
-
-const resolveAsyncFns = (fns) => {
-  const fn = R.head(fns.splice(0, 1))
-  logProgress(`Remaining links to create: ${fns.length}`)
-
-  if (!fns.length) return true
-
-  // delay is needed to stop node from keeling over
-  return Q.delay(6).then(fn).then(() => resolveAsyncFns(fns))
-}
 
 module.exports = {
   type: TYPE,
@@ -42,7 +32,7 @@ module.exports = {
     log(`Resolving ${R.length(linkFns)} links in ${TYPE} topology`)
 
     // return a promise with all connected nodes
-    return resolveAsyncFns(linkFns).then((allResolved) => {
+    return resolveWithTailRec(linkFns).then((allResolved) => {
       return nodes
     })
   }

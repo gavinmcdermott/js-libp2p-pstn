@@ -1,9 +1,11 @@
 'use strict'
 
 const chalk = require('chalk')
+const ENV = require('./env')
 // https://github.com/marcominetti/node-memwatch
 const memwatch = require('memwatch-next')
-const ENV = require('./env')
+const Q = require('q')
+const R = require('ramda')
 const readline = require('readline')
 const util = require('util')
 
@@ -75,6 +77,16 @@ const random = (min, max) => {
   return Math.floor(Math.random() * (max - min) + min)
 }
 
+const resolveWithTailRec = (fns) => {
+  const fn = R.head(fns.splice(0, 1))
+  logProgress(`${fns.length} resolutions are remaining...`)
+
+  if (!fns.length) return true
+
+  // delay is needed to stop node from keeling over
+  return Q.delay(6).then(fn).then(() => resolveWithTailRec(fns))
+}
+
 if (ENV.PROFILE_MEM) {
   memwatch.on('leak', (data) => {
     // console.log('leak!', data)
@@ -85,4 +97,4 @@ if (ENV.PROFILE_MEM) {
   })
 }
 
-module.exports = { log, logWarn, logError, logProgress, random }
+module.exports = { log, logWarn, logError, logProgress, random, resolveWithTailRec }

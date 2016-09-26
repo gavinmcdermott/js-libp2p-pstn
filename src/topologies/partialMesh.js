@@ -3,7 +3,7 @@
 const Q = require('q')
 const R = require('ramda')
 
-const { log, logError, logProgress, random } = require('./../utils')
+const { log, logError, logProgress, random, resolveWithTailRec } = require('./../utils')
 
 const BOOTSTRAP_PEER_COUNT = 2
 const TYPE = 'PARTIAL_MESH'
@@ -16,16 +16,6 @@ const genPeersToFetch = (len, skipIdx, maxPeers) => {
     }
     return idxToFetch
   }, R.range(0, maxPeers))
-}
-
-const resolveLinkConnection = (fns) => {
-  const fn = R.head(fns.splice(0, 1))
-  logProgress(`Remaining links to create: ${fns.length}`)
-
-  if (!fns.length) return true
-
-  // delay is needed to stop node from keeling over
-  return Q.delay(6).then(fn).then(() => resolveLinkConnection(fns))
 }
 
 module.exports = {
@@ -61,7 +51,7 @@ module.exports = {
     log(`Resolving ${R.length(linkFns)} links in ${TYPE} topology`)
 
     // return a promise with all connected nodes
-    return resolveLinkConnection(linkFns).then((allResolved) => {
+    return resolveWithTailRec(linkFns).then((allResolved) => {
       return nodes
     })
   }
