@@ -6,6 +6,7 @@ const R = require('ramda')
 const { log, logError, logProgress, random } = require('./../utils')
 
 const BOOTSTRAP_PEER_COUNT = 2
+const TYPE = 'PARTIAL_MESH'
 
 const genPeersToFetch = (len, skipIdx, maxPeers) => {
   return R.map(() => {
@@ -19,7 +20,7 @@ const genPeersToFetch = (len, skipIdx, maxPeers) => {
 
 const resolveLinkConnection = (fns) => {
   const fn = R.head(fns.splice(0, 1))
-  logProgress(`Remaining network links to create: ${fns.length}`)
+  logProgress(`Remaining links to create: ${fns.length}`)
 
   if (!fns.length) return true
 
@@ -28,7 +29,7 @@ const resolveLinkConnection = (fns) => {
 }
 
 module.exports = {
-  type: 'PARTIAL_MESH',
+  type: TYPE,
   init: (nodes) => {
     const size = nodes.length
 
@@ -57,8 +58,9 @@ module.exports = {
 
     const linkFns = R.flatten(nestedPeerLinkFns)
 
-    log(`Resolving ${R.length(linkFns)} links between nodes`)
+    log(`Resolving ${R.length(linkFns)} links in ${TYPE} topology`)
 
+    // return a promise with all connected nodes
     return resolveLinkConnection(linkFns).then((allResolved) => {
       return nodes
     })
