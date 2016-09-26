@@ -11,6 +11,7 @@ const topologies = require('./../../src/topologies/index')
 const nClusters = require('./../../src/topologies/nClusters')
 
 const totalNodes = testUtils.DEFAULT_SIZE
+// const totalNodes = 5
 
 function getRandomInt(min, max) {
   min = Math.ceil(min);
@@ -81,6 +82,8 @@ describe(`Topology: ${nClusters.type}`, () => {
         const idD = nodeD.peerInfo.id.toB58String()
         const peerBookD = nodeD.libp2p.peerBook.getAll()
         const peerCountD = R.keys(peerBookD).length
+
+        console.log()
 
         expect(peerCountA === 3).to.be.true
 
