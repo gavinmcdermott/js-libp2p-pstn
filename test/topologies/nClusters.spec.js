@@ -59,25 +59,25 @@ describe(`Topology: ${nClusters.type}`, () => {
     it('success returns promise with connected nodes', () => {
       return nClusters.init(nodes).then((connected) => {
         // first node in first cluster
-        const nodeA = connected[0]
+        const nodeA = nodes[0]
         const idA = nodeA.peerInfo.id.toB58String()
         const peerBookA = nodeA.libp2p.peerBook.getAll()
         const peerCountA = R.keys(peerBookA).length
 
         // second node in first cluster
-        const nodeB = connected[1]
+        const nodeB = nodes[1]
         const idB = nodeB.peerInfo.id.toB58String()
         const peerBookB = nodeB.libp2p.peerBook.getAll()
         const peerCountB = R.keys(peerBookB).length
 
         // last node in first cluster
-        const nodeC = connected[29]
+        const nodeC = nodes[29]
         const idC = nodeC.peerInfo.id.toB58String()
         const peerBookC = nodeC.libp2p.peerBook.getAll()
         const peerCountC = R.keys(peerBookC).length
 
         // first node for next cluster
-        const nodeD = connected[30]
+        const nodeD = nodes[30]
         const idD = nodeD.peerInfo.id.toB58String()
         const peerBookD = nodeD.libp2p.peerBook.getAll()
         const peerCountD = R.keys(peerBookD).length

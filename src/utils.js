@@ -83,8 +83,9 @@ const resolveAsyncAccum = (fns) => {
 
   if (!fns.length) return true
 
-  // delay is needed to stop node from keeling over
-  return Q.delay(6).then(fn).then(() => resolveAsyncAccum(fns))
+  // delay is needed to break the recursion and prevent larger memory leaks
+  // http://stackoverflow.com/questions/15027192/how-do-i-stop-memory-leaks-with-recursive-javascript-promises
+  return Q.delay(1).then(fn).then(() => resolveAsyncAccum(fns))
 }
 
 if (ENV.PROFILE_MEM) {
