@@ -1,4 +1,4 @@
 'use strict'
 
-module.exports.DEFAULT_SIZE = 5
-module.exports.DEFAULT_TOPOLOGY_TYPE = 'PARTIAL_MESH'
+module.exports.DEFAULT_SIZE = 50
+module.exports.DEFAULT_TOPOLOGY_TYPE = 'RING'

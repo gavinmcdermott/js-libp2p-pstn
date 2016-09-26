@@ -2,6 +2,7 @@
 
 const expect = require('chai').expect
 const R = require('ramda')
+const Q = require('q')
 
 const testUtils = require('./../testUtils')
 
@@ -10,7 +11,7 @@ const Topology = require('./../../src/topologies/topology')
 const topologies = require('./../../src/topologies/index')
 const ring = require('./../../src/topologies/ring')
 
-const totalNodes = 10
+const totalNodes = testUtils.DEFAULT_SIZE
 
 describe(`Topology: ${ring.type}`, () => {
   let instance
@@ -36,6 +37,8 @@ describe(`Topology: ${ring.type}`, () => {
   describe('init', () => {
     before(() => {
       nodes = R.map((offset) => new Node(offset), R.range(0, totalNodes))
+      const inits = R.map((n) => n.init(), nodes)
+      return Q.allSettled(inits)
     })
 
     // Must kill connections for further other tests!
@@ -49,31 +52,44 @@ describe(`Topology: ${ring.type}`, () => {
     })
 
     it('success returns promise with connected nodes', () => {
-      ring.init(nodes).then((connected) => {
+      return ring.init(nodes).then((connected) => {
         // first node
-        const nodeA = connected[0]
+        const nodeA = nodes[0]
         const idA = nodeA.peerInfo.id.toB58String()
         const peerBookA = nodeA.libp2p.peerBook.getAll()
         const peerCountA = R.keys(peerBookA).length
 
         // second node
-        const nodeB = connected[1]
+        const nodeB = nodes[1]
         const idB = nodeB.peerInfo.id.toB58String()
         const peerBookB = nodeB.libp2p.peerBook.getAll()
         const peerCountB = R.keys(peerBookB).length
 
-        // last node
-        const nodeC = connected[connected.length - 1]
+        // third node
+        const nodeC = nodes[2]
         const idC = nodeC.peerInfo.id.toB58String()
         const peerBookC = nodeC.libp2p.peerBook.getAll()
         const peerCountC = R.keys(peerBookC).length
 
-        expect(peerCountA === 1).to.be.true
-        expect(peerCountB === 1).to.be.true
-        expect(peerCountC === 1).to.be.true
+        // last node
+        const nodeD = nodes[nodes.length - 1]
+        const idD = nodeD.peerInfo.id.toB58String()
+        const peerBookD = nodeD.libp2p.peerBook.getAll()
+        const peerCountD = R.keys(peerBookD).length
 
-        expect(R.head(nodeA.libp2p.peerBook)).to.equal(idB)
-        expect(R.head(nodeC.libp2p.peerBook)).to.equal(idA)
+        expect(peerCountA === 2).to.be.true
+        expect(R.contains(idB, R.keys(peerBookA))).to.be.true
+        expect(R.contains(idD, R.keys(peerBookA))).to.be.true
+
+        expect(peerCountB === 2).to.be.true
+        expect(R.contains(idC, R.keys(peerBookB))).to.be.true
+        expect(R.contains(idA, R.keys(peerBookB))).to.be.true
+
+        expect(peerCountC === 2).to.be.true
+        expect(R.contains(idB, R.keys(peerBookC))).to.be.true
+
+        expect(peerCountD === 2).to.be.true
+        expect(R.contains(idA, R.keys(peerBookD))).to.be.true
       })
     })
   })

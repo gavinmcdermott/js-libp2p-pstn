@@ -77,19 +77,18 @@ const random = (min, max) => {
   return Math.floor(Math.random() * (max - min) + min)
 }
 
-const resolveWithTailRec = (fns) => {
+const resolveAsyncAccum = (fns) => {
   const fn = R.head(fns.splice(0, 1))
-  logProgress(`${fns.length} resolutions are remaining...`)
+  logProgress(`${fns.length} resolutions remaining...`)
 
   if (!fns.length) return true
 
   // delay is needed to stop node from keeling over
-  return Q.delay(6).then(fn).then(() => resolveWithTailRec(fns))
+  return Q.delay(6).then(fn).then(() => resolveAsyncAccum(fns))
 }
 
 if (ENV.PROFILE_MEM) {
   memwatch.on('leak', (data) => {
-    // console.log('leak!', data)
     logError(`Memory leak potential: Heap growth over 5 consecutive GCs: ${util.format('%j', data)}`)
   })
   memwatch.on('stats', (data) => {
@@ -97,4 +96,4 @@ if (ENV.PROFILE_MEM) {
   })
 }
 
-module.exports = { log, logWarn, logError, logProgress, random, resolveWithTailRec }
+module.exports = { log, logWarn, logError, logProgress, random, resolveAsyncAccum }

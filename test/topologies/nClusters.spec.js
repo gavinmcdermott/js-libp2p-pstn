@@ -8,7 +8,7 @@ const testUtils = require('./../testUtils')
 const Node = require('./../../src/nodes/index')
 const Topology = require('./../../src/topologies/topology')
 const topologies = require('./../../src/topologies/index')
-const partialMesh = require('./../../src/topologies/partialMesh')
+const nClusters = require('./../../src/topologies/nClusters')
 
 const totalNodes = testUtils.DEFAULT_SIZE
 
@@ -18,32 +18,28 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
-describe(`Topology: ${partialMesh.type}`, () => {
+describe(`Topology: ${nClusters.type}`, () => {
   let instance
   let nodes
 
   it('has a type', () => {
-    expect(partialMesh.type).to.exist
-    expect(typeof partialMesh.type).to.equal('string')
+    expect(nClusters.type).to.exist
+    expect(typeof nClusters.type).to.equal('string')
   })
 
   it('has an init', () => {
-    expect(partialMesh.init).to.exist
-    expect(typeof partialMesh.init).to.equal('function')
+    expect(nClusters.init).to.exist
+    expect(typeof nClusters.init).to.equal('function')
   })
 
   it('succeeds', () => {
-    instance = new Topology(partialMesh)
+    instance = new Topology(nClusters)
     expect(instance instanceof Topology).to.be.true
     expect(instance.type).to.exist
     expect(instance.init).to.exist
   })
 
   describe('init', () => {
-    // test 2 random nodes in the mesh
-    const randA = getRandomInt(0, totalNodes)
-    const randB = getRandomInt(0, totalNodes)
-
     before(() => {
       nodes = R.map((offset) => new Node(offset), R.range(0, totalNodes))
       const inits = R.map((n) => n.init(), nodes)
@@ -61,21 +57,36 @@ describe(`Topology: ${partialMesh.type}`, () => {
     })
 
     it('success returns promise with connected nodes', () => {
-      return partialMesh.init(nodes).then((connected) => {
-        // first node
-        const nodeA = nodes[randA]
+      return nClusters.init(nodes).then((connected) => {
+        // first node in first cluster
+        const nodeA = connected[0]
         const idA = nodeA.peerInfo.id.toB58String()
         const peerBookA = nodeA.libp2p.peerBook.getAll()
         const peerCountA = R.keys(peerBookA).length
 
-        // second node
-        const nodeB = nodes[randB]
+        // second node in first cluster
+        const nodeB = connected[1]
         const idB = nodeB.peerInfo.id.toB58String()
         const peerBookB = nodeB.libp2p.peerBook.getAll()
         const peerCountB = R.keys(peerBookB).length
 
-        expect(peerCountA >= 2).to.be.true
-        expect(peerCountB >= 2).to.be.true
+        // last node in first cluster
+        const nodeC = connected[29]
+        const idC = nodeC.peerInfo.id.toB58String()
+        const peerBookC = nodeC.libp2p.peerBook.getAll()
+        const peerCountC = R.keys(peerBookC).length
+
+        // first node for next cluster
+        const nodeD = connected[30]
+        const idD = nodeD.peerInfo.id.toB58String()
+        const peerBookD = nodeD.libp2p.peerBook.getAll()
+        const peerCountD = R.keys(peerBookD).length
+
+        expect(peerCountA === 3).to.be.true
+
+        expect(R.contains(idB, R.keys(peerBookA))).to.be.true
+        expect(R.contains(idC, R.keys(peerBookA))).to.be.true
+        expect(R.contains(idD, R.keys(peerBookA))).to.be.true
       })
     })
   })

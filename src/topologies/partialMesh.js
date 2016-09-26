@@ -3,7 +3,7 @@
 const Q = require('q')
 const R = require('ramda')
 
-const { log, logError, logProgress, random, resolveWithTailRec } = require('./../utils')
+const { log, logError, logProgress, random, resolveAsyncAccum } = require('./../utils')
 
 const BOOTSTRAP_PEER_COUNT = 2
 const TYPE = 'PARTIAL_MESH'
@@ -51,8 +51,8 @@ module.exports = {
     log(`Resolving ${R.length(linkFns)} links in ${TYPE} topology`)
 
     // return a promise with all connected nodes
-    return resolveWithTailRec(linkFns).then((allResolved) => {
-      return nodes
+    return resolveAsyncAccum(linkFns).then((connected) => {
+      return connected
     })
   }
 }
