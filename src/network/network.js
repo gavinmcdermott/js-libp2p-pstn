@@ -3,19 +3,9 @@
 // Note on open file limits in OSX
 // https://support.code42.com/CrashPlan/4/Troubleshooting/Backups_Stall_Due_To_Too_Many_Open_Files
 
-const Bitswap = require('ipfs-bitswap')
-const bs = require('abstract-blob-store')
-const libp2p = require('libp2p-ipfs')
-const multiaddr = require('multiaddr')
-const os = require('os')
-const PeerId = require('peer-id')
-const PeerInfo = require('peer-info')
 const Q = require('q')
 const R = require('ramda')
-const Repo = require('ipfs-repo')
-const util = require('util')
 
-// const CONFIG  = require('./config')
 const Topology = require('./../topologies/topology')
 const Node = require('./../nodes/index')
 const { log, logWarn, logError, logProgress } = require('./../utils')
