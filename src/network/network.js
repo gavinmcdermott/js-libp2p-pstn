@@ -7,8 +7,7 @@ const Q = require('q')
 const R = require('ramda')
 
 const Topology = require('./../topologies/topology')
-// const Node = require('./../nodes/index')
-const Node = require('js-libp2p-pstn-node')
+const Node = require('libp2p-pstn-node')
 
 const pregenKeys = require('./../../fixtures/keys').keys
 

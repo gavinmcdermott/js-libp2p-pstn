@@ -6,7 +6,7 @@ const Q = require('q')
 
 const testUtils = require('./../testUtils')
 
-const Node = require('js-libp2p-pstn-node')
+const Node = require('libp2p-pstn-node')
 const Topology = require('./../../src/topologies/topology')
 const topologies = require('./../../src/topologies/index')
 const ring = require('./../../src/topologies/ring')
