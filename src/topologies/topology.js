@@ -1,7 +1,8 @@
 'use strict'
 
 const R = require('ramda')
-const Node = require('./../nodes/index')
+// const Node = require('./../nodes/index')
+const Node = require('js-libp2p-pstn-node')
 
 module.exports = class Topology {
   constructor(topology) {

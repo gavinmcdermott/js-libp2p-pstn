@@ -7,7 +7,11 @@ const Q = require('q')
 const R = require('ramda')
 
 const Topology = require('./../topologies/topology')
-const Node = require('./../nodes/index')
+// const Node = require('./../nodes/index')
+const Node = require('js-libp2p-pstn-node')
+
+const pregenKeys = require('./../../fixtures/keys').keys
+
 const { log, logWarn, logError, logProgress } = require('./../utils')
 
 module.exports = class Network {
@@ -15,6 +19,9 @@ module.exports = class Network {
     // network size
     if (R.type(config.size) !== 'Number') {
       throw new Error('Network constructor error: size must be a valid NUMBER')
+    }
+    if (config.size > pregenKeys.length) {
+      throw new Error('Network constructor error: size must not exceed total pregenerated keys ('+pregenKeys.length+')')
     }
     this._size = config.size
 
@@ -25,7 +32,13 @@ module.exports = class Network {
     this._topology = config.topology
 
     // network node instances
-    this.nodes = R.map((offset) => new Node(offset), R.range(0, this.size))
+    this.nodes = R.map((idx) => {
+      const options = {
+        id: pregenKeys[idx],
+        portOffset: idx
+      }
+      return new Node(options)
+    }, R.range(0, this.size))
   }
 
   init() {

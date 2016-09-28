@@ -5,10 +5,11 @@ const R = require('ramda')
 
 const testUtils = require('./../testUtils')
 
-const Node = require('./../../src/nodes/index')
+const Node = require('js-libp2p-pstn-node')
 const Topology = require('./../../src/topologies/topology')
 const topologies = require('./../../src/topologies/index')
 const partialMesh = require('./../../src/topologies/partialMesh')
+const pregenKeys = require('./../../fixtures/keys').keys
 
 const totalNodes = testUtils.DEFAULT_SIZE
 
@@ -45,8 +46,16 @@ describe(`Topology: ${partialMesh.type}`, () => {
     const randB = getRandomInt(0, totalNodes)
 
     before(() => {
-      nodes = R.map((offset) => new Node(offset), R.range(0, totalNodes))
+      nodes = R.map((idx) => {
+        const options = {
+          id: pregenKeys[idx],
+          portOffset: idx
+        }
+        return new Node(options)
+      }, R.range(0, totalNodes))
+
       const inits = R.map((n) => n.init(), nodes)
+
       return Promise.all(inits)
     })
 
@@ -60,22 +69,27 @@ describe(`Topology: ${partialMesh.type}`, () => {
       expect(thrower).to.throw()
     })
 
-    it('success returns promise with connected nodes', () => {
-      return partialMesh.init(nodes).then((connected) => {
-        // first node
-        const nodeA = nodes[randA]
-        const idA = nodeA.peerInfo.id.toB58String()
-        const peerBookA = nodeA.libp2p.peerBook.getAll()
-        const peerCountA = R.keys(peerBookA).length
+    it('success returns promise with connected nodes', (done) => {
+      partialMesh.init(nodes).then((connected) => {
+        // Allow the peerbooks to populate
+        setTimeout(() => {
+          // first node
+          const nodeA = nodes[randA]
+          const idA = nodeA.peerInfo.id.toB58String()
+          const peerBookA = nodeA.libp2p.peerBook.getAll()
+          const peerCountA = R.keys(peerBookA).length
 
-        // second node
-        const nodeB = nodes[randB]
-        const idB = nodeB.peerInfo.id.toB58String()
-        const peerBookB = nodeB.libp2p.peerBook.getAll()
-        const peerCountB = R.keys(peerBookB).length
+          // second node
+          const nodeB = nodes[randB]
+          const idB = nodeB.peerInfo.id.toB58String()
+          const peerBookB = nodeB.libp2p.peerBook.getAll()
+          const peerCountB = R.keys(peerBookB).length
 
-        expect(peerCountA >= 2).to.be.true
-        expect(peerCountB >= 2).to.be.true
+          expect(peerCountA >= 2).to.be.true
+          expect(peerCountB >= 2).to.be.true
+
+          done()
+        }, 2000)
       })
     })
   })
