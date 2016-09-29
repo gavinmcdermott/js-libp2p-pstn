@@ -5,13 +5,14 @@
 
 const Q = require('q')
 const R = require('ramda')
-
-const Topology = require('./../topologies/topology')
 const Node = require('libp2p-pstn-node')
 
+const Topology = require('./../topologies/topology')
+const { debug, logProgress } = require('./../utils')
 const pregenKeys = require('./../../fixtures/keys').keys
 
-const { log, logWarn, logError, logProgress } = require('./../utils')
+const log = debug('pstn:network')
+log.err = debug('pstn:network:error')
 
 module.exports = class Network {
   constructor(config={}) {
@@ -43,7 +44,7 @@ module.exports = class Network {
   init() {
     log(`Initializing a ${this.size} node network`)
     const start = new Date()
-    const nodeInits = R.map((n) => n.init(), this.nodes)
+    const nodeInits = R.map((n) => n.start(), this.nodes)
 
     return Q.allSettled(nodeInits)
       .then(() => this.topology.init(this.nodes))
@@ -53,7 +54,7 @@ module.exports = class Network {
         return this
       })
       .catch((err) => {
-        logError(err)
+        log.err(err)
         process.exit()
       })
   }

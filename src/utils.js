@@ -9,6 +9,12 @@ const R = require('ramda')
 const readline = require('readline')
 const util = require('util')
 
+const debug = require('debug')
+
+const memLog = debug('pstn:memory-watch')
+memLog.err = debug('pstn:memory-watch:warning')
+
+
 // flag which is used to tell the logger if it should overwrite the current log line
 let lastLogWasProgress = false
 
@@ -33,7 +39,7 @@ const logWithOpts = (level, data) => {
 
   if (isProgressLog) {
     lastLogWasProgress = true
-
+    // update for new logs
     rl.write(null, { ctrl: true, name: 'u' })
     rl.write(`${prefix}: ${data}`)
   } else {
@@ -90,11 +96,29 @@ const resolveAsyncAccum = (fns) => {
 
 if (ENV.PROFILE_MEM) {
   memwatch.on('leak', (data) => {
-    logError(`Memory leak potential: Heap growth over 5 consecutive GCs: ${util.format('%j', data)}`)
+    memLog.err(`Memory leak potential: Heap growth over 5 consecutive GCs: ${util.format('%j', data)}`)
   })
   memwatch.on('stats', (data) => {
-    log(`Memory profile: ${util.format('%j', data)}`)
+    memLog(`Memory profile: ${util.format('%j', data)}`)
   })
 }
 
-module.exports = { log, logWarn, logError, logProgress, random, resolveAsyncAccum }
+module.exports = {
+  log,
+  logWarn,
+  logError,
+  logProgress,
+  random,
+  resolveAsyncAccum,
+
+  //
+  debug
+}
+
+
+
+
+
+
+
+

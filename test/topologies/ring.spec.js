@@ -45,7 +45,7 @@ describe(`Topology: ${ring.type}`, () => {
         return new Node(options)
       }, R.range(0, totalNodes))
 
-      const inits = R.map((n) => n.init(), nodes)
+      const inits = R.map((n) => n.start(), nodes)
 
       return Q.allSettled(inits)
     })
