@@ -1,104 +1,47 @@
-# PubSub Testnet (a utility for libp2p)
-#### 
+# libp2p Pubsub Testnet (pstn)
 
-The Pubsub Testnet is a utility (*still in early, active development*) for initializing a arbitrary networks of a few thousand [libp2p nodes](https://github.com/libp2p/js-libp2p) connected by some specified topology (this size will increase dramatically as things progress). It provides useful interfaces, tools, and statistics to make designing and implementing network messaging strategies/algorithms easier.
+The Pubsub Testnet is a utility for initializing arbitrary networks of [libp2p nodes](https://github.com/libp2p/js-libp2p) connected by some specified topology. It provides useful benchmarking tools to make designing and implementing network p2p pubsub/messaging strategies faster and somewhat more sane.
 
-## Purpose
+This module is currently being updated to work with these modules:
+- `js-libp2p-pstn-node`: for pubsub testnet node instances
+- `js-libp2p-pstn-logger`: logs pubsub events and useful data in a consistent manner
+- `js-libp2p-pstn-stats`: walks the log file output from the logger to generate benchmark data (starting with network traversal time for a message)
 
-The initial purpose of this utility is to to make the development, testing, debugging, and implementation of messaging ('PubSub') strategies in [IPFS](http://ipfs.io/) a delightful experience that's *fun for the whole family!* ™
+## Example
 
-## Examples
+Here's how these will play together
 
-Initially the best examples can be found by looking through `/test`. But there's also a basic example of network initialization in the `example.js`.
+```javascript
 
-Before running any tests or examples `npm install` dependencies
+const Node = require('js-libp2p-pstn-node')
+const addLog = require('js-libp2p-pstn-logger')
+const PStats = require('js-libp2p-pstn-stats')
+const PS = require('js-libp2p-floodsub')
 
-#### Run the tests
+// ... do stuff
 
-Run: `npm test`
-
-#### Run a basic example
-
-Run: `npm start`
-
-
-## Abstractions
-
-### Network
-The Network abstraction enables you to work with the network as a whole. It is comprised of `Nodes` and takes the form of a specified `Topology`. Initially you have access to a `Network`'s basics, but eventually this abstraction will enable you to trigger network outages, node dropouts, and the like.
-
-```
-const { Network, topologies } = require('./src/index')
-const size = 1000
-const topology = topologies['PARTIAL_MESH']  // valid topology type
-
-// init the network with a size and Topology instance
-const network = new Network({ size, topology })
-
-network.init().then((initializedNetwork) => { /* do something awesome! */ })
-
-// Useful properties
-network.size
-network.nodes
-network.topology
-```
-
-### Nodes
-`Node` instances are basically wrappers for `libp2p` peer instances (distinctly different than, and pared down from, a full IPFS node). Currently, `Nodes` only need a unique port offset to initialize.
-
-```
-const Q = require('q')
-const R = require('ramda')
-
-// Node initialization is handled by network instances
-// but here's what happens conceptually...
-const nodes = R.map((offset) => new Node(offset), R.range(0, 1000))
-
-const nodeInits = R.map((n) => n.init(), nodes)
-
-Q.allSettled(nodeInits).then((resolvedVals) => {
-    // if you want to work with the returned nodes, you need to 
-    // extract them from the resolvedVals. But once all are settled, 
-    // a topology can be initialized with these nodes
-    topology.init(nodes)
-})
-
-// Useful properties
-node.peerInfo
-node.libp2p
-node.repo
-node.bitswap
-```
-
-### Topologies
-`Topologies` are various arrangements used to specify and shape the connections of your particular `Network` instance—they are passed in during the creation of a `Network` instances. Currently the interface for a `Topology` is extremely simple. Each one has a `type` and an `init` function (which expects an array of `Nodes` from your `Network`). The implementation details are left to you. This may change in the future, but currently serves the purpose.
-
-##### Adding a new topology
-Now if you've read this far, you may be saying to yourself...
-
-> Geez, I'd really love to see [insert_topology]! How might I go about doing this? Surely it must be challenging!
-
-Well, things are pretty simple. The API for a new topology would look something like this:
-```
-module.exports = {
-  // all caps snake-casing for types
-  type: 'SOME_NAME',
-  
-  // return a promise with your nodes once they are arranged and connected
-  init: (nodes) => {
-    /* do some connecting, then return the nodes */
-    return Promise.resolve(nodes)
+// ... make nodes
+this.nodes = R.map((idx) => {
+  const options = {
+    id: pregenKeys[idx],
+    portOffset: idx
   }
-}
+  let node = new Node(options)
+  let nodeId = node.peerInfo.id.toB58String()
+  node.pubsub = PS(node.libp2p)
+  addLogger(node.pubsub, nodeId)
+  return node
+}, [0,1,2,3,4])
+
+// ... start nodes and send messages
+
+
+// then check out happened
+PStats.eventLog
+PStats.topicLog
+PStats.stats
+
 ```
-Then all you have to do is add your implementation to the `index.js` file in `/src/topologies` (...eventually I'll use `fs` to walk the files for discovery, but today it's manual).
 
-## Config
 
-Config for each abstraction can be found in the relevant `config` file. To toggle debugging and memory profiling, use config in `/src/env.js`.
 
-## Feedback and Issues
-
-I'd love to hear new thoughts and ideas about how to improve this utility. Feel free to shoot me an email with ideas, or open up a new issue and I'll get back to you as soon as I can. 
-
-**A sincere thank you in advance for providing any thoughts and ideas, and generally helping to improve this utility for the entire community!**
