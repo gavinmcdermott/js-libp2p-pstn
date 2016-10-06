@@ -17,9 +17,9 @@ For a real example check out `example.js`, otherwise take a look below.
 
 ```javascript
 const Testnet   = require('libp2p-pstn')
-const Floodsub  = require('libp2p-floodsub')
 const Stats     = require('libp2p-pstn-stats')
 const ringTopo  = require('libp2p-pstn-topo-ring')
+const Floodsub  = require('libp2p-floodsub')
 
 const size = 10
 const network = new Testnet({ size, pubsub: Floodsub })
