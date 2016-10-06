@@ -1,6 +1,6 @@
 # libp2p pstn
 
-The Libp2p Pubsub Testnet (`libp2p-pstn`) is a utility for initializing arbitrary networks of [libp2p nodes](https://github.com/libp2p/js-libp2p) connected by some topology. It provides useful benchmarking tools for designing and implementing p2p pubsub/messaging strategies.
+The Libp2p Pubsub Testnet (`libp2p-pstn`) is a utility for initializing arbitrary networks of [libp2p nodes](https://github.com/libp2p/js-libp2p) connected by some topology. It provides useful benchmarking tools for designing and implementing p2p pubsub/messaging strategies and is composed of [modules from the `libp2p-pstn-*` ecosystem](https://github.com/gavinmcdermott/js-libp2p-pstn#ecosystem).
 
 ## Install
 
@@ -105,17 +105,17 @@ To run the tests:
 
 ### Logging
 
-`libp2p-pstn-logger`: Decorates a pubsub node instance and logs under the `pstn:logger` namespace in a format consumable by a stats parser ([repo](https://github.com/gavinmcdermott/js-libp2p-pstn-logger)). Currently built to work with [floodsub](https://github.com/libp2p/js-libp2p-floodsub).
+- `libp2p-pstn-logger`: Decorates a pubsub node instance and logs under the `pstn:logger` namespace in a format consumable by a stats parser ([repo](https://github.com/gavinmcdermott/js-libp2p-pstn-logger)). Currently built to work with [floodsub](https://github.com/libp2p/js-libp2p-floodsub).
 
 ### Statistics
 
-`libp2p-pstn-stats`: Generates in basic stats for a testnet instance based on logs from all pubsub node activity ([repo](https://github.com/gavinmcdermott/js-libp2p-pstn-stats)).
+- `libp2p-pstn-stats`: Generates in basic stats for a testnet instance based on logs from all pubsub node activity ([repo](https://github.com/gavinmcdermott/js-libp2p-pstn-stats)).
 
 ### Topologies
 
-`libp2p-pstn-topo-*`: Topologies used to connect a testnet instance.
+- `libp2p-pstn-topo-*`: Topologies used to connect a testnet instance.
 
-`libp2p-pstn-topo-ring`: Basic ring topology ([repo](https://github.com/gavinmcdermott/js-libp2p-pstn-topo-ring)).
+- `libp2p-pstn-topo-ring`: Basic ring topology ([repo](https://github.com/gavinmcdermott/js-libp2p-pstn-topo-ring)).
 
 ## Contribute
 
