@@ -6,6 +6,7 @@ const topo = require('libp2p-pstn-topo-ring')
 const PS = require('./node_modules/libp2p-floodsub/src')
 const Testnet = require('./src')
 
+// Note: we have 120 pregenerated keys currently; more coming soon
 const size = 10
 
 const network = new Testnet({ size, pubsub: PS })
