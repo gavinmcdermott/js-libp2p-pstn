@@ -3,18 +3,53 @@
 // Note on open file limits in OSX
 // https://support.code42.com/CrashPlan/4/Troubleshooting/Backups_Stall_Due_To_Too_Many_Open_Files
 
+const fs = require('fs')
+const path = require('path')
 const Q = require('q')
 const R = require('ramda')
-
 const libp2p = require('libp2p-ipfs')
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const addLogger = require('libp2p-pstn-logger')
+const PubsubStats = require('libp2p-pstn-stats')
 
 const keys = require('./../fixtures/keys').keys
+const logPath = path.resolve(__dirname, './../logs/log.log')
+
 const { TestNetError } = require('./errors')
 const { log, PORT } = require('./config')
+
+function createNodes (config) {
+  const PS = config.pubsub
+  const size = config.size
+
+  return R.map((idx) => {
+    // Use pregenerated keys
+    const privKey = keys[idx].privKey
+
+    // Peer info
+    const peerId = PeerId.createFromPrivKey(privKey)
+    const peerInstance = new PeerInfo(peerId)
+    const peerAddr1 = multiaddr(`/ip4/127.0.0.1/tcp/${PORT+idx}/ipfs/${peerInstance.id.toB58String()}`)
+    peerInstance.multiaddr.add(peerAddr1)
+
+    // Libp2p info
+    const libp2pInstance = new libp2p.Node(peerInstance)
+
+    // The network node instance
+    let node = {
+      peerInfo: peerInstance,
+      libp2p: libp2pInstance,
+      id: peerInstance.id.toB58String(),
+      pubsub: PS(libp2pInstance),
+    }
+    // Add test logging
+    addLogger(node.pubsub, node.id)
+    // Add the node to the network
+    return node
+  }, R.range(0, size))
+}
 
 module.exports = class Network {
   constructor (config={}) {
@@ -31,33 +66,8 @@ module.exports = class Network {
     if (R.isNil(config.pubsub) || !R.equals(typeof(config.pubsub), 'function')) {
       throw new TestNetError(`Invalid pubsub`)
     }
-    const PS = config.pubsub
 
-    this.nodes = R.map((idx) => {
-      // Use pregenerated keys
-      const privKey = keys[idx].privKey
-
-      // Peer info
-      const peerId = PeerId.createFromPrivKey(privKey)
-      const peerInstance = new PeerInfo(peerId)
-      const peerAddr1 = multiaddr(`/ip4/127.0.0.1/tcp/${PORT+idx}/ipfs/${peerInstance.id.toB58String()}`)
-      peerInstance.multiaddr.add(peerAddr1)
-
-      // Libp2p info
-      const libp2pInstance = new libp2p.Node(peerInstance)
-
-      // The network node instance
-      let node = {
-        peerInfo: peerInstance,
-        libp2p: libp2pInstance,
-        id: peerInstance.id.toB58String(),
-        pubsub: PS(libp2pInstance),
-      }
-      // Add test logging
-      addLogger(node.pubsub, node.id)
-      // Add the node to the network
-      return node
-    }, R.range(0, this.size))
+    this._nodes = createNodes(config)
 
     log('Testnet instance created')
   }
@@ -102,20 +112,16 @@ module.exports = class Network {
     })
   }
 
-  get nodes () {
-    return this._nodes
+  get stats () {
+    const log = fs.readFileSync(logPath)
+    return new PubsubStats(log)
   }
 
-  set nodes (nodes) {
-    this._nodes = nodes
+  get nodes () {
     return this._nodes
   }
 
   get size () {
     return this._size
-  }
-
-  get topology () {
-    return this._topology
   }
 }

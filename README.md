@@ -1,47 +1,122 @@
-# libp2p Pubsub Testnet (pstn)
+# libp2p pstn
 
-The Pubsub Testnet is a utility for initializing arbitrary networks of [libp2p nodes](https://github.com/libp2p/js-libp2p) connected by some specified topology. It provides useful benchmarking tools to make designing and implementing network p2p pubsub/messaging strategies faster and somewhat more sane.
+The Libp2p Pubsub Testnet (`libp2p-pstn`) is a utility for initializing arbitrary networks of [libp2p nodes](https://github.com/libp2p/js-libp2p) connected by some topology. It provides useful benchmarking tools for designing and implementing p2p pubsub/messaging strategies.
 
-This module is currently being updated to work with these modules:
-- `js-libp2p-pstn-node`: for pubsub testnet node instances
-- `js-libp2p-pstn-logger`: logs pubsub events and useful data in a consistent manner
-- `js-libp2p-pstn-stats`: walks the log file output from the logger to generate benchmark data (starting with network traversal time for a message)
+## Install
 
-## Example
+To install through npm:
 
-Here's how these will play together
-
-```javascript
-
-const Node = require('js-libp2p-pstn-node')
-const addLog = require('js-libp2p-pstn-logger')
-const PStats = require('js-libp2p-pstn-stats')
-const PS = require('js-libp2p-floodsub')
-
-// ... do stuff
-
-// ... make nodes
-this.nodes = R.map((idx) => {
-  const options = {
-    id: pregenKeys[idx],
-    portOffset: idx
-  }
-  let node = new Node(options)
-  let nodeId = node.peerInfo.id.toB58String()
-  node.pubsub = PS(node.libp2p)
-  addLogger(node.pubsub, nodeId)
-  return node
-}, [0,1,2,3,4])
-
-// ... start nodes and send messages
-
-
-// then check out happened
-PStats.eventLog
-PStats.topicLog
-PStats.stats
-
+```sh
+> npm i libp2p-pstn-topo-ring --save
 ```
 
 
+## Example
 
+```javascript
+const Testnet   = require('libp2p-pstn')
+const Floodsub  = require('libp2p-floodsub')
+const Stats     = require('libp2p-pstn-stats')
+const ringTopo  = require('libp2p-pstn-topo-ring')
+
+const size = 10
+const network = new Testnet({ size, pubsub: Floodsub })
+
+// Start the nodes
+network.start()
+  // Use an existing topology from the libp2p-pstn-topo-* ecosystem
+  // or pass the setTopology a custom topology creation function your own
+  .then((network) => network.setTopology(ringTopo))
+  // Do lots of things like subscribing, publishing, etc (eventually this will be scripted)
+  .then((network) => {
+    const nodeA = network.nodes[0]
+    const nodeB = network.nodes[1]
+    
+    // ...
+    nodeA.pubsub.subscribe('Topic A')
+    // ... Do lots more
+    nodeB.pubsub.publish('Topic A', 'Some message!')
+    // ...
+    
+    // Then return the network's stats
+    return Promise.resolve(network.stats)
+  })
+  .then((stats) => {
+    // stats.eventLog
+    // stats.topicLog
+    // stats.stats
+  })
+```
+
+## API
+
+### Testnet
+
+#### `new Testnet({ size: <int>, pubsub: <pubsub_strategy> })`
+
+### Instance Properties
+
+#### `instance.size` 
+
+#### `instance.nodes`
+
+Nodes in the the network are structured as follows: 
+
+```javascript
+{
+  peerInfo: <peer_info_instance>,
+  libp2p: <libp2p_nstance>,
+  id: <peer_info_id_b58>,
+  pubsub: <pubsub_node_instance>
+}
+```
+
+#### `instance.stats`
+
+Returns a [`js-libp2p-pstn-stats`](https://github.com/gavinmcdermott/js-libp2p-pstn-stats) instance built from pubsub node activity event logs.
+
+## Demo
+
+To run the demo:
+
+```sh
+> npm start
+```
+
+To run the demo with a debug log:
+
+```sh
+> npm start:debug
+```
+
+## Tests
+
+To run the tests:
+
+```sh
+> npm test
+```
+
+## Ecosystem
+
+`libp2p-pstn` is composed of a small, developing ecosystem for testing p2p messaging strategies in `libp2p`. They follow the `libp2p-pstn-*` convention.
+
+### Logging
+
+`libp2p-pstn-logger`: Decorates a pubsub node instance and logs under the `pstn:logger` namespace in a format consumable by a stats parser ([repo](https://github.com/gavinmcdermott/js-libp2p-pstn-logger)). Currently built to work with [floodsub](https://github.com/libp2p/js-libp2p-floodsub).
+
+### Statistics
+
+`libp2p-pstn-stats`: Generates in basic stats for a testnet instance based on logs from all pubsub node activity ([repo](https://github.com/gavinmcdermott/js-libp2p-pstn-logger)).
+
+### Topologies
+
+`libp2p-pstn-topo-*`: Topologies used to connect a testnet instance ([repo](https://github.com/gavinmcdermott/js-libp2p-pstn-topo-stats)).
+
+## Contribute
+
+PRs are welcome!
+
+## License
+
+MIT © Gavin McDermott
