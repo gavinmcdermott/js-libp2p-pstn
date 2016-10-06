@@ -107,11 +107,13 @@ To run the tests:
 
 ### Statistics
 
-`libp2p-pstn-stats`: Generates in basic stats for a testnet instance based on logs from all pubsub node activity ([repo](https://github.com/gavinmcdermott/js-libp2p-pstn-logger)).
+`libp2p-pstn-stats`: Generates in basic stats for a testnet instance based on logs from all pubsub node activity ([repo](https://github.com/gavinmcdermott/js-libp2p-pstn-stats)).
 
 ### Topologies
 
-`libp2p-pstn-topo-*`: Topologies used to connect a testnet instance ([repo](https://github.com/gavinmcdermott/js-libp2p-pstn-topo-stats)).
+`libp2p-pstn-topo-*`: Topologies used to connect a testnet instance.
+
+`libp2p-pstn-topo-ring`: Basic ring topology ([repo](https://github.com/gavinmcdermott/js-libp2p-pstn-topo-ring)).
 
 ## Contribute
 
