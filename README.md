@@ -13,6 +13,8 @@ To install through npm:
 
 ## Example
 
+For a real example check out `example.js`, otherwise take a look below.
+
 ```javascript
 const Testnet   = require('libp2p-pstn')
 const Floodsub  = require('libp2p-floodsub')
