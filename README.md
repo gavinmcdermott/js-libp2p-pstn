@@ -1,6 +1,6 @@
 # libp2p pstn
 
-The Libp2p Pubsub Testnet (`libp2p-pstn`) is a utility for initializing arbitrary networks of [libp2p nodes](https://github.com/libp2p/js-libp2p) connected by some topology. It provides useful benchmarking tools for designing and implementing p2p pubsub/messaging strategies and is composed of [modules from the `libp2p-pstn-*` ecosystem](https://github.com/gavinmcdermott/js-libp2p-pstn#ecosystem).
+The Libp2p Pubsub Testnet (`libp2p-pstn`) is a utility for initializing arbitrary networks of [libp2p nodes](https://github.com/libp2p/js-libp2p) connected by some topology. It provides useful benchmarking tools for designing and implementing p2p pubsub/messaging strategies and is composed of modules from the `libp2p-pstn-*` [ecosystem](https://github.com/gavinmcdermott/js-libp2p-pstn#ecosystem).
 
 ## Install
 
