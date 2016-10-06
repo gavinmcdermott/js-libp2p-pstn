@@ -7,7 +7,7 @@ The Libp2p Pubsub Testnet (`libp2p-pstn`) is a utility for initializing arbitrar
 To install through npm:
 
 ```sh
-> npm i libp2p-pstn-topo-ring --save
+> npm i libp2p-pstn --save
 ```
 
 
