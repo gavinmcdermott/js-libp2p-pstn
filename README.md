@@ -115,7 +115,9 @@ To run the tests:
 
 - `libp2p-pstn-topo-*`: Topologies used to connect a testnet instance.
 
-- `libp2p-pstn-topo-ring`: Basic ring topology ([repo](https://github.com/gavinmcdermott/js-libp2p-pstn-topo-ring)).
+- `libp2p-pstn-topo-ring`: Ring topology ([repo](https://github.com/gavinmcdermott/js-libp2p-pstn-topo-ring)).
+
+- `libp2p-pstn-topo-partialmesh`: Partial mesh topology with 2 connections per peer ([repo](https://github.com/gavinmcdermott/js-libp2p-pstn-topo-partialmesh)).
 
 ## Contribute
 
