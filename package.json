@@ -6,7 +6,7 @@
   "scripts": {
     "start": "DEBUG=pstn:logger* node runner.js 2> logs/log.log",
     "start:debug": "DEBUG=pstn:stats* node runner.js",
-    "start:server": "node server/app.js",
+    "start:server": "DEBUG=pstn:logger* node server/app.js 2> logs/log.log",
     "test": "mocha -t 60000 test/**/*.spec.js"
   },
   "keywords": [

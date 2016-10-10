@@ -38,9 +38,9 @@ function run() {
     .then((network) => {
       nodeA.pubsub.subscribe('A')
 
-      // setTimeout(() => {
-      //   nodeB.pubsub.publish('A', 'A note here :)')
-      // }, 1000)
+      setTimeout(() => {
+        nodeB.pubsub.publish('A', 'A note here :)')
+      }, 1000)
 
       setTimeout(() => {
         nodeB.pubsub.publish('A', 'WHAT IS THIS NOTE???')
