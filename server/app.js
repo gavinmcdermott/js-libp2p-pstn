@@ -28,8 +28,7 @@ function handleWsConn (ws) {
   console.log('socket server connected')
 
   network.on('connected', (nodes) => {
-    console.log('')
-    console.log('testnet topology connected')
+    console.log('\ntestnet topology connected')
     // Send across the new network when connected
     const nodeConns = R.map((node) => {
       return {

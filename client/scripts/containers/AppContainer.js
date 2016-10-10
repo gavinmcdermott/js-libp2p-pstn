@@ -17,15 +17,22 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    run: () => dispatch(actions.run()),
+    run: () => {
+      const svgElement = document.getElementById('svg')
+      while (svgElement.firstChild) {
+        svgElement.removeChild(svgElement.firstChild)
+      }
+
+      return dispatch(actions.run())
+    },
     addEvent: (event) => dispatch(actions.addEvent(event)),
     updateStats: (stats) => dispatch(actions.updateStats(stats))
   }
 }
 
 function drawNetwork (network) {
+  let svgElement = document.getElementById('svg')
   const svg = d3.select("#svg").append("svg:svg")
-  const svgElement = document.getElementById('svg')
 
   const svgHeight = R.dropLast(2, window.getComputedStyle(svgElement).height)
   const svgWidth = R.dropLast(2, window.getComputedStyle(svgElement).width)
