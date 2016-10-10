@@ -13,6 +13,7 @@ const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const addLogger = require('libp2p-pstn-logger')
 const PubsubStats = require('libp2p-pstn-stats')
+const EE = require('events').EventEmitter
 
 const keys = require('./../fixtures/keys').keys
 const logPath = path.resolve(__dirname, './../logs/log.log')
@@ -42,17 +43,21 @@ function createNodes (config) {
       peerInfo: peerInstance,
       libp2p: libp2pInstance,
       id: peerInstance.id.toB58String(),
-      pubsub: PS(libp2pInstance),
+      pubsub: PS(libp2pInstance)
     }
+
     // Add test logging
-    addLogger(node.pubsub, node.id)
+    node.logger = addLogger(node.pubsub, node.id)
+
     // Add the node to the network
     return node
   }, R.range(0, size))
 }
 
-module.exports = class Network {
+module.exports = class Network extends EE {
   constructor (config={}) {
+    super()
+
     // network size
     if (R.type(config.size) !== 'Number') {
       throw new TestNetError(`Size must be <number>`)

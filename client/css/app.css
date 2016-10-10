@@ -1,0 +1,61 @@
+body {
+  height: 100%;
+  width: 100%;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.section {
+  margin-bottom: 40px;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+svg:not(:root) {
+  overflow: visible;
+}
+
+svg, #svg {
+  width: 100%;
+  height: 600px;
+  background: #efefef;
+  position: relative;
+  display: block;
+  overflow: visible;
+}
+
+.links line {
+  stroke: #aaa;
+}
+
+.nodes circle {
+  pointer-events: all;
+  stroke: none;
+  stroke-width: 40px;
+}
+
+.arrow{
+  stroke-width:5;
+  stroke:#000;
+  stroke-dasharray:5, 5;
+}
+
+.events {
+  padding: 15px;
+  height: 600px;
+  max-height: 600px;
+  overflow-y: scroll;
+  background: #efefef;
+}
+
+.event {
+  margin: 10px 0;
+  border-bottom: 2px solid #bebebe;
+}
+
+.stats {
+  background: #efefef;
+}
