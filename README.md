@@ -23,9 +23,7 @@ Go to `http://localhost:8080` in your browser. Open the console for logs, or jus
 
 If you want to swap the topology (with a mesh or your own function) or rework the script for which nodes subscribe to what and who send what, open the `runner.js` file in the root and customize the `run` function. It should be pretty straightforward.
 
-For a real example check out `example.js`, otherwise take a look below.
-
-*Note about client page refreshes: If you refresh the page, you need to restart the server. This will be fixed soon.*
+**Note about client page refreshes:** If you refresh the page, you need to restart the server. This will be fixed soon.
 
 ## API
 
