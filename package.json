@@ -1,6 +1,6 @@
 {
   "name": "libp2p-pstn",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Benchmark utility for designing and testing new js-libp2p pubsub strategies",
   "main": "src/network.js",
   "scripts": {
