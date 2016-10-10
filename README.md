@@ -13,42 +13,19 @@ To install through npm:
 
 ## Example
 
+Run the UI client with the default topology (ring) and default/example pubsub events:
+
+```sh
+> npm start
+```
+
+Go to `http://localhost:8080` in your browser. Open the console for logs, or just click the "Start Testnet Runner" button to kick off the pubsub test. Events will stream in followed by propagation stats and the full event log.
+
+If you want to swap the topology (with a mesh or your own function) or rework the script for which nodes subscribe to what and who send what, open the `runner.js` file in the root and customize the `run` function. It should be pretty straightforward.
+
 For a real example check out `example.js`, otherwise take a look below.
 
-```javascript
-const Testnet   = require('libp2p-pstn')
-const Stats     = require('libp2p-pstn-stats')
-const ringTopo  = require('libp2p-pstn-topo-ring')
-const Floodsub  = require('libp2p-floodsub')
-
-const size = 10
-const network = new Testnet({ size, pubsub: Floodsub })
-
-// Start the nodes
-network.start()
-  // Use an existing topology from the libp2p-pstn-topo-* ecosystem
-  // or pass the setTopology a custom topology creation function your own
-  .then((network) => network.setTopology(ringTopo))
-  // Do lots of things like subscribing, publishing, etc (eventually this will be scripted)
-  .then((network) => {
-    const nodeA = network.nodes[0]
-    const nodeB = network.nodes[1]
-    
-    // ...
-    nodeA.pubsub.subscribe('Topic A')
-    // ... Do lots more
-    nodeB.pubsub.publish('Topic A', 'Some message!')
-    // ...
-    
-    // Then return the network's stats
-    return Promise.resolve(network.stats)
-  })
-  .then((stats) => {
-    // stats.eventLog
-    // stats.topicLog
-    // stats.stats
-  })
-```
+*Note about client page refreshes: If you refresh the page, you need to restart the server. This will be fixed soon.*
 
 ## API
 
@@ -79,16 +56,10 @@ Returns a [`js-libp2p-pstn-stats`](https://github.com/gavinmcdermott/js-libp2p-p
 
 ## Demo
 
-To run the demo:
+To run the UI client:
 
 ```sh
 > npm start
-```
-
-To run the demo with a debug log:
-
-```sh
-> npm start:debug
 ```
 
 ## Tests
