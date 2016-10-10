@@ -4,8 +4,7 @@
   "description": "Benchmark utility for designing and testing new js-libp2p pubsub strategies",
   "main": "src/network.js",
   "scripts": {
-    "start": "DEBUG=pstn:logger* node example.js 2> logs/log.log",
-    "start:debug": "DEBUG=pstn:stats* node example.js",
+    "start": "DEBUG=pstn:logger* node server/app.js 2> logs/log.log",
     "test": "mocha -t 60000 test/**/*.spec.js"
   },
   "keywords": [
@@ -18,19 +17,36 @@
   "license": "MIT",
   "dependencies": {
     "debug": "2.2.0",
+    "express": "4.14.0",
     "libp2p-floodsub": "0.3.0",
     "libp2p-ipfs": "0.14.1",
-    "libp2p-pstn-logger": "0.0.1",
+    "libp2p-pstn-logger": "0.0.2",
     "libp2p-pstn-stats": "0.0.4",
+    "libp2p-pstn-topo-partialmesh": "0.0.2",
     "libp2p-pstn-topo-ring": "0.0.3",
     "memwatch-next": "0.3.0",
     "multiaddr": "2.0.3",
+    "node-uuid": "1.4.7",
     "peer-id": "0.7.0",
     "peer-info": "0.7.1",
-    "ramda": "0.22.1"
+    "ramda": "0.22.1",
+    "react": "15.3.2",
+    "react-dom": "15.3.2",
+    "react-redux": "4.4.5",
+    "react-router": "2.8.1",
+    "redux": "3.6.0",
+    "redux-thunk": "2.1.0",
+    "reqwest": "2.0.5",
+    "ws": "1.1.1"
   },
   "devDependencies": {
-    "chai": "3.5.0"
+    "babel-core": "6.17.0",
+    "babel-loader": "6.2.5",
+    "babel-preset-es2015": "6.16.0",
+    "babel-preset-react": "6.16.0",
+    "babel-preset-stage-0": "6.16.0",
+    "chai": "3.5.0",
+    "webpack": "1.13.2"
   },
   "directories": {
     "test": "test"

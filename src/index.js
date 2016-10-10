@@ -13,6 +13,7 @@ const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const addLogger = require('libp2p-pstn-logger')
 const PubsubStats = require('libp2p-pstn-stats')
+const EE = require('events').EventEmitter
 
 const keys = require('./../fixtures/keys').keys
 const logPath = path.resolve(__dirname, './../logs/log.log')
@@ -42,17 +43,21 @@ function createNodes (config) {
       peerInfo: peerInstance,
       libp2p: libp2pInstance,
       id: peerInstance.id.toB58String(),
-      pubsub: PS(libp2pInstance),
+      pubsub: PS(libp2pInstance)
     }
+
     // Add test logging
-    addLogger(node.pubsub, node.id)
+    node.logger = addLogger(node.pubsub, node.id)
+
     // Add the node to the network
     return node
   }, R.range(0, size))
 }
 
-module.exports = class Network {
+module.exports = class Network extends EE {
   constructor (config={}) {
+    super()
+
     // network size
     if (R.type(config.size) !== 'Number') {
       throw new TestNetError(`Size must be <number>`)
@@ -91,7 +96,7 @@ module.exports = class Network {
       })
       .catch((err) => {
         log.err(err)
-        process.exit()
+        console.log(err)
       })
   }
 
@@ -101,11 +106,17 @@ module.exports = class Network {
     }
     log('Testnet topology being set')
     const self = this
+
     return fn(this.nodes).then(() => {
       // Resolve after a short timeout to allow the p2p conns to establish
       return new Promise((resolve) => {
+        // Clear the prior log
+        fs.writeFileSync(logPath, 0)
+
         log('Testnet topology set')
         setTimeout(() => {
+          // Emit the topology connected event
+          self.emit('connected', self.nodes)
           resolve(self)
         }, 2500)
       })
@@ -114,7 +125,10 @@ module.exports = class Network {
 
   get stats () {
     const log = fs.readFileSync(logPath)
-    return new PubsubStats(log)
+    const stats = new PubsubStats(log)
+    // Emit the stats event
+    this.emit('stats', stats)
+    return stats
   }
 
   get nodes () {
