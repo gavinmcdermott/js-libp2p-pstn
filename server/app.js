@@ -65,9 +65,3 @@ function handleLogEvent (ws) {
     ws.send(JSON.stringify(parsed))
   }
 }
-
-
-
-
-
-

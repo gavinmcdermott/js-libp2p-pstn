@@ -4,9 +4,7 @@
   "description": "Benchmark utility for designing and testing new js-libp2p pubsub strategies",
   "main": "src/network.js",
   "scripts": {
-    "start": "DEBUG=pstn:logger* node runner.js 2> logs/log.log",
-    "start:debug": "DEBUG=pstn:stats* node runner.js",
-    "start:server": "DEBUG=pstn:logger* node server/app.js 2> logs/log.log",
+    "start": "DEBUG=pstn:logger* node server/app.js 2> logs/log.log",
     "test": "mocha -t 60000 test/**/*.spec.js"
   },
   "keywords": [

@@ -5,6 +5,8 @@ import reqwest from 'reqwest'
 
 import { httpUrl } from './../config'
 
+let requestInProgress = false
+
 const _clearEvents = () => {
   return {
     type: 'CLEAR_EVENTS'
@@ -39,6 +41,9 @@ module.exports.updateStats = (data) => {
 
 module.exports.run = (data) => {
   return (dispatch, getState) => {
+    if (requestInProgress) return
+    requestInProgress = true
+
     reqwest({
       url: httpUrl + '/run',
       type: 'json',
@@ -46,9 +51,11 @@ module.exports.run = (data) => {
       contentType: 'application/json',
       crossOrigin: true,
       error: function (err) {
+        requestInProgress = false
         console.log('ERR RUNNING!', err)
       },
       success: function (resp) {
+        requestInProgress = false
         dispatch(_clearEvents())
       }
     })

@@ -220,7 +220,7 @@ class AppContainer extends Component {
               <div id="svg"></div>
             </div>
             <div className="section">
-              <button className="pure-button pure-button-primary" onClick={this.props.run.bind(this)}>Start Testnet Runner</button>
+              <button className="pure-button pure-button-primary button-large" onClick={this.props.run.bind(this)}>Start Testnet Runner</button>
             </div>
           </div>
         </div>

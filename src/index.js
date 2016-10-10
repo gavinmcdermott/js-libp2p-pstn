@@ -106,9 +106,13 @@ module.exports = class Network extends EE {
     }
     log('Testnet topology being set')
     const self = this
+
     return fn(this.nodes).then(() => {
       // Resolve after a short timeout to allow the p2p conns to establish
       return new Promise((resolve) => {
+        // Clear the prior log
+        fs.writeFileSync(logPath, 0)
+
         log('Testnet topology set')
         setTimeout(() => {
           // Emit the topology connected event
