@@ -1,3 +1,6 @@
+'use strict'
+
+import R from 'ramda'
 import React, { Component } from 'react'
 import { Link } from 'react-router'
 import { connect } from 'react-redux'
@@ -15,7 +18,8 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
   return {
     run: () => dispatch(actions.run()),
-    addEvent: (event) => dispatch(actions.addEvent(event))
+    addEvent: (event) => dispatch(actions.addEvent(event)),
+    updateStats: (stats) => dispatch(actions.updateStats(stats))
   }
 }
 
@@ -99,57 +103,162 @@ class AppContainer extends Component {
         case 'event':
           this.props.addEvent(parsed.data)
           break
+        case 'stats':
+          this.props.updateStats(parsed.data)
+          break
       }
     }
   }
 
   render() {
+    const currentEvent = R.last(this.props.events.all)
+    let eventNode = <div><i>Awaiting start...</i></div>
+
+    if (currentEvent) {
+      eventNode = (
+        <div>
+          <h3>Type: {currentEvent.type}</h3>
+          <p>Source: {currentEvent.source}</p>
+          <p>Time: {new Date(currentEvent.timestamp).toString()}</p>
+          <p>Args: {JSON.stringify(currentEvent.args)}</p>
+        </div>
+      )
+    }
+
+    function generateTopicLog (topicLog) {
+      let results = []
+
+      R.mapObjIndexed((topicObj, topic) => {
+        let result = {
+          subscribers: topicObj.subscribers,
+          topic: window.atob(topic),
+          messages: []
+        }
+
+        R.mapObjIndexed((messageObj, msg) => {
+          if (msg !== 'subscribers') {
+            let traverseTime = null
+            if (messageObj.exit) {
+              traverseTime = (messageObj.exit - messageObj.enter) / 1000  // in seconds
+            }
+
+            result.messages.push({
+              message: window.atob(msg),
+              enter: messageObj.enter,
+              exit: messageObj.exit,
+              recipients: messageObj.recipients,
+              traverseTime
+            })
+          }
+        }, topicObj)
+
+        results.push(result)
+      }, topicLog)
+
+      return R.map((result) => {
+        return (
+          <div key={uuid.v4()} className="item">
+            <div>
+              <h3>Topic: {result.topic}</h3>
+            </div>
+            <div>
+              <h3>Subscribers:</h3>
+              {R.map((s) => <p key={uuid.v4()}>{s}</p>, result.subscribers)}
+            </div>
+            <div>
+              <h3>Messages:</h3>
+              {R.map((msg) => {
+                return (
+                  <div className="item--nested" key={uuid.v4()}>
+                    <p><strong>Message:</strong></p>
+                    <p>{msg.message}</p>
+
+                    <p><strong>Recipients:</strong></p>
+                    {R.map((r) => <p key={uuid.v4()}>{r}</p>, msg.recipients)}
+
+                    <p><strong>Enter:</strong> {msg.enter}</p>
+                    <p><strong>Exit:</strong> {msg.exit}</p>
+                    <p><strong>Traversal Time: </strong>
+                      {
+                        R.isNil(msg.traverseTime) ?
+                        `Message did not reach all subscribers` :
+                        `${msg.traverseTime} seconds`
+                      }
+                    </p>
+                  </div>
+                )
+              }, result.messages)}
+            </div>
+          </div>
+        )
+      }, results)
+    }
+
+
     return (
       <div className="container">
 
         <div className="pure-g">
           <div className="pure-u-1-1">
             <div className="section">
-              <h1>Testnet Runnner</h1>
+              <h1>Testnet Runner</h1>
             </div>
           </div>
-        </div>
-
-        <div className="section">
-          <h2>Topology</h2>
-          <div id="svg"></div>
-        </div>
-
-        <div className="section">
-          <button className="pure-button" onClick={this.props.run.bind(this)}>Start Testnet Runner</button>
         </div>
 
         <div className="pure-g">
-
-          <div className="pure-u-2-3">
+          <div className="pure-u-1-1">
             <div className="section">
-              <h2>Events</h2>
-              <div className="events">
-                {R.map((evt) => {
-                  return (
-                    <div key={uuid.v4()} className="event">
-                      <h4>Type: {evt.type}</h4>
-                      <p>Source: {evt.source}</p>
-                      <p>Time: {evt.timestamp}</p>
-                      <p>Args: {JSON.stringify(evt.args)}</p>
-                    </div>
-                  )
-                }, this.props.events.all)}
+              <h2>Topology</h2>
+              <div id="svg"></div>
+            </div>
+            <div className="section">
+              <button className="pure-button pure-button-primary" onClick={this.props.run.bind(this)}>Start Testnet Runner</button>
+            </div>
+          </div>
+        </div>
+
+        <div className="pure-g">
+          <div className="pure-u-1-1">
+            <div className="section">
+              <h2>Most Recent Event</h2>
+              <div className="content">
+                {eventNode}
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="pure-u-1-3">
+        <div className="pure-g">
+          <div className="pure-u-1-1">
             <div className="section">
-              <h2>Stats</h2>
+              <h2>Propagation Stats</h2>
+              <div className="content content-scroll">
+                {generateTopicLog(this.props.events.topicLog)}
+              </div>
             </div>
           </div>
+        </div>
 
+        <div className="pure-g">
+          <div className="pure-u-1-1">
+            <div className="section">
+              <h2>Event Log</h2>
+              <div className="content content-scroll">
+                {R.map((event) => {
+                  return (
+                    <div key={uuid.v4()} className="item">
+                      <p><strong>Source: </strong> {event.source}</p>
+                      <p><strong>Type: </strong> {event.type}</p>
+                      <p><strong>Topic: </strong> {window.atob(event.topic)}</p>
+                      <p><strong>Message: </strong> {window.atob(event.msg)}</p>
+                      <p><strong>timestamp: </strong> {new Date(event.timestamp).toString()}</p>
+                    </div>
+                  )
+                }, this.props.events.eventLog)}
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>

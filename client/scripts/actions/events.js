@@ -5,29 +5,40 @@ import reqwest from 'reqwest'
 
 import { httpUrl } from './../config'
 
-const clearEvents = () => {
+const _clearEvents = () => {
   return {
     type: 'CLEAR_EVENTS'
   }
 }
 
-const newEvent = (data) => {
+const _addEvent = (data) => {
   return {
     type: 'NEW_EVENT',
     data
   }
 }
 
+const _updateStats = (data) => {
+  return {
+    type: 'UPDATE_STATS',
+    data
+  }
+}
+
 module.exports.addEvent = (data) => {
   return (dispatch, getState) => {
-    return dispatch(newEvent(data))
+    return dispatch(_addEvent(data))
+  }
+}
+
+module.exports.updateStats = (data) => {
+  return (dispatch, getState) => {
+    return dispatch(_updateStats(data))
   }
 }
 
 module.exports.run = (data) => {
   return (dispatch, getState) => {
-    console.log('running')
-
     reqwest({
       url: httpUrl + '/run',
       type: 'json',
@@ -38,9 +49,7 @@ module.exports.run = (data) => {
         console.log('ERR RUNNING!', err)
       },
       success: function (resp) {
-        console.log('successfully running!', resp)
-        dispatch(clearEvents())
-        // dispatch(clearStats())
+        dispatch(_clearEvents())
       }
     })
   }

@@ -96,7 +96,7 @@ module.exports = class Network extends EE {
       })
       .catch((err) => {
         log.err(err)
-        process.exit()
+        console.log(err)
       })
   }
 
@@ -111,6 +111,8 @@ module.exports = class Network extends EE {
       return new Promise((resolve) => {
         log('Testnet topology set')
         setTimeout(() => {
+          // Emit the topology connected event
+          self.emit('connected', self.nodes)
           resolve(self)
         }, 2500)
       })
@@ -119,7 +121,10 @@ module.exports = class Network extends EE {
 
   get stats () {
     const log = fs.readFileSync(logPath)
-    return new PubsubStats(log)
+    const stats = new PubsubStats(log)
+    // Emit the stats event
+    this.emit('stats', stats)
+    return stats
   }
 
   get nodes () {

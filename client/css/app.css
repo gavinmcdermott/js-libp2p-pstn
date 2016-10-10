@@ -1,4 +1,5 @@
-body {
+
+html, body {
   height: 100%;
   width: 100%;
 }
@@ -6,13 +7,43 @@ body {
 .container {
   max-width: 960px;
   margin: 0 auto;
+  padding-top: 30px;
+  padding-bottom: 80px;
 }
 
 .section {
-  margin-bottom: 40px;
+  margin-bottom: 30px;
   padding-left: 15px;
   padding-right: 15px;
 }
+
+.content {
+  padding: 15px;
+  background-color: #efefef;
+}
+
+.content-scroll {
+  max-height: 400px;
+  overflow-y: scroll;
+}
+
+.item {
+  padding: 15px;
+  margin-bottom: 15px;
+  background: #efefef;
+  border-bottom: 1px solid #bfbfbf;
+}
+
+.item--nested {
+  border-left: 8px solid #dfdfdf;
+  padding-left: 50px;
+  margin-bottom: 25px;
+}
+.item--nested:first-child {
+  margin-top: 25px;
+}
+
+/* SVG */
 
 svg:not(:root) {
   overflow: visible;
@@ -20,7 +51,7 @@ svg:not(:root) {
 
 svg, #svg {
   width: 100%;
-  height: 600px;
+  height: 500px;
   background: #efefef;
   position: relative;
   display: block;
@@ -37,25 +68,8 @@ svg, #svg {
   stroke-width: 40px;
 }
 
-.arrow{
+.arrow {
   stroke-width:5;
   stroke:#000;
   stroke-dasharray:5, 5;
-}
-
-.events {
-  padding: 15px;
-  height: 600px;
-  max-height: 600px;
-  overflow-y: scroll;
-  background: #efefef;
-}
-
-.event {
-  margin: 10px 0;
-  border-bottom: 2px solid #bebebe;
-}
-
-.stats {
-  background: #efefef;
 }

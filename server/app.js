@@ -25,9 +25,11 @@ const wss = new WebSocketServer({ server })
 wss.on('connection', handleWsConn)
 
 function handleWsConn (ws) {
-  console.log('connected socket server')
+  console.log('socket server connected')
 
   network.on('connected', (nodes) => {
+    console.log('')
+    console.log('testnet topology connected')
     // Send across the new network when connected
     const nodeConns = R.map((node) => {
       return {
@@ -45,10 +47,16 @@ function handleWsConn (ws) {
       ps.on('subscribe', handleLogEvent(ws))
       ps.on('unsubscribe', handleLogEvent(ws))
     }, nodes)
+    console.log('testnet event handlers connected')
+  })
+
+  network.on('stats', (data) => {
+    console.log('testnet stats collected')
+    ws.send(JSON.stringify({ type: 'stats', data }))
   })
 
   ws.on('close', function() {
-    console.log('stopping socket server')
+    console.log('socket server disconnected')
   })
 }
 
